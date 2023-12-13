@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
-    <id>https://your-docusaurus-site.example.com/blog</id>
+    <id>https://dennypenta.github.io/mynameis/blog</id>
     <title>Denny's blog Blog</title>
     <updated>2023-12-13T21:25:34.000Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
-    <link rel="alternate" href="https://your-docusaurus-site.example.com/blog"/>
+    <link rel="alternate" href="https://dennypenta.github.io/mynameis/blog"/>
     <subtitle>Denny's blog Blog</subtitle>
-    <icon>https://your-docusaurus-site.example.com/img/favicon.ico</icon>
+    <icon>https://dennypenta.github.io/mynameis/img/favicon.ico</icon>
     <entry>
         <title type="html"><![CDATA[Why you need your own blog]]></title>
-        <id>https://your-docusaurus-site.example.com/blog/why-a-blog</id>
-        <link href="https://your-docusaurus-site.example.com/blog/why-a-blog"/>
+        <id>https://dennypenta.github.io/mynameis/blog/why-a-blog</id>
+        <link href="https://dennypenta.github.io/mynameis/blog/why-a-blog"/>
         <updated>2023-12-13T21:25:34.000Z</updated>
         <summary type="html"><![CDATA[It's not supposed to be deployed yet.]]></summary>
         <content type="html"><![CDATA[<p>It's not supposed to be deployed yet.</p>

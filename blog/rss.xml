@@ -2,7 +2,7 @@
 <rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/">
     <channel>
         <title>Denny's blog Blog</title>
-        <link>https://your-docusaurus-site.example.com/blog</link>
+        <link>https://dennypenta.github.io/mynameis/blog</link>
         <description>Denny's blog Blog</description>
         <lastBuildDate>Wed, 13 Dec 2023 21:25:34 GMT</lastBuildDate>
         <docs>https://validator.w3.org/feed/docs/rss2.html</docs>
@@ -10,8 +10,8 @@
         <language>en</language>
         <item>
             <title><![CDATA[Why you need your own blog]]></title>
-            <link>https://your-docusaurus-site.example.com/blog/why-a-blog</link>
-            <guid>https://your-docusaurus-site.example.com/blog/why-a-blog</guid>
+            <link>https://dennypenta.github.io/mynameis/blog/why-a-blog</link>
+            <guid>https://dennypenta.github.io/mynameis/blog/why-a-blog</guid>
             <pubDate>Wed, 13 Dec 2023 21:25:34 GMT</pubDate>
             <description><![CDATA[It's not supposed to be deployed yet.]]></description>
             <content:encoded><![CDATA[<p>It's not supposed to be deployed yet.</p>
