@@ -4,6 +4,8 @@
 
 my personal blog source code
 
+link: https://dennypenta.github.io/mynameis/
+
 ### can I have the same?
 
 - clone/fork
