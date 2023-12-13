@@ -53,11 +53,6 @@ const config: Config = {
       title: 'hi! Im Denis',
       items: [
         {to: '/blog', label: 'Blog', position: 'left'},
-        {
-          href: 'https://github.com/facebook/docusaurus',
-          label: 'GitHub',
-          position: 'right',
-        },
       ],
     },
     footer: {
