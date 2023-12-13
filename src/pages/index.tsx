@@ -1,43 +1,63 @@
-import clsx from 'clsx';
-import Link from '@docusaurus/Link';
-import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
-import Layout from '@theme/Layout';
-import HomepageFeatures from '@site/src/components/HomepageFeatures';
-import Heading from '@theme/Heading';
+import styles from './index.module.css'
+import React from 'react'
+import Layout from '@theme/Layout'
+import { FaGithub, FaLinkedinIn, FaTwitter } from 'react-icons/fa'
 
-import styles from './index.module.css';
-
-function HomepageHeader() {
-  const {siteConfig} = useDocusaurusContext();
+const Index = (): JSX.Element => {
   return (
-    <header className={clsx('hero hero--primary', styles.heroBanner)}>
-      <div className="container">
-        <Heading as="h1" className="hero__title">
-          {siteConfig.title}
-        </Heading>
-        <p className="hero__subtitle">{siteConfig.tagline}</p>
-        <div className={styles.buttons}>
-          <Link
-            className="button button--secondary button--lg"
-            to="/docs/intro">
-            Docusaurus Tutorial - 5min ⏱️
-          </Link>
+    <Layout title="About me" description="About me">
+      <div
+        className={styles.container}
+        style={{
+          display: 'flex',
+          flexGrow: 1,
+          justifyContent: 'center',
+          padding: '2em',
+          gap: '2em',
+        }}
+      >
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            width: '340px',
+            flexDirection: 'column',
+          }}
+        >
+          <h1 className={styles.heading}>Hey, I'm Denis!</h1>
+
+          <p>
+            On this website I share what I find cool.
+          </p>
+
+          <h4>my keywords</h4>
+          <ul>
+            <li>Go</li>
+            <li>nodejs</li>
+            <li>python</li>
+            <li>k8s</li>
+          </ul>
+
+          <div style={{ marginBottom: '1em' }}>
+            <img className={styles.image} src={require('../assets/1.jpg').default} />
+          </div>
+
+          <div className={styles.socialLinks}>
+            <a target="_blank" rel="noreferrer" href="https://twitter.com/candyboobers">
+              <FaTwitter size={32} />
+            </a>
+            <a target="_blank" rel="noreferrer" href="https://github.com/dennypenta">
+              <FaGithub size={32} />
+            </a>
+            <a target="_blank" rel="noreferrer" href="https://www.linkedin.com/in/denis-dvornikov-33399812b/">
+              <FaLinkedinIn size={32} />
+            </a>
+          </div>
         </div>
       </div>
-    </header>
-  );
+    </Layout>
+  )
 }
 
-export default function Home(): JSX.Element {
-  const {siteConfig} = useDocusaurusContext();
-  return (
-    <Layout
-      title={`Hello from ${siteConfig.title}`}
-      description="Description will go into a meta tag in <head />">
-      <HomepageHeader />
-      <main>
-        <HomepageFeatures />
-      </main>
-    </Layout>
-  );
-}
+export default Index
