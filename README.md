@@ -11,3 +11,5 @@ link: https://dennypenta.github.io/mynameis/
 - clone/fork
 - update the names in docusaurus.config.js
 - replace the blog folder on yours
+
+##### Inspired by https://takken.io/
