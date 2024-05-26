@@ -1,1 +1,0 @@
-"use strict";(self.webpackChunkmynameis=self.webpackChunkmynameis||[]).push([[535],{5641:e=>{e.exports=JSON.parse('{"title":"Recent posts","items":[{"title":"Why this page exists","permalink":"/mynameis/blog/why-a-blog","unlisted":false}]}')}}]);
