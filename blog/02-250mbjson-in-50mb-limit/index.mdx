@@ -1,0 +1,243 @@
+---
+slug: big-json
+title: 250mb json in a 40mb service limit 
+authors: [denis]
+tags: [software]
+---
+
+This article has been created to remind us of one simple thing: HTTP is a stream.
+
+As a practical outcome we can learn how to reduce memory requirements for our services in a typical task: cache warming.
+
+<!--truncate-->
+
+Let's look at the challenge first.
+
+We have a service that must download the data and keep it in memory.
+The issue is the JSON document we have to download is 10 times larger than the encoded data. 
+Therefore we have to increase the memory limit 2-3 times to download it once. 
+Later on, the service doesn't consume as much memory, so it's a start up cost.
+
+
+### The challenge: cut down the memory consumption as much as we can.
+
+Let's get back to the basic of network communication.
+
+:::note
+We skip TLS termination for the sake of simplicity.
+:::
+
+There is a great book that explains it very well: https://hpbn.co/building-blocks-of-tcp/#slow-start
+
+![img](./syn.svg)
+
+Just a litle picture to remind us how a connection starts: we do a handshake with the service.
+
+Then we can start exchanging data.
+Typical API responses are at most ~50kb.
+
+But what if you want to warm a cache? How much can it be? 
+It can be a lot, around tens of megabytes.
+In my example, we take 250mb.
+
+How does the server send such data?
+
+![img](./congestion.svg)
+
+Slowly, packet by packet.
+
+The server tries to understand your throughput. The protocol itself rarely provides an accurate value of a packet size, so by relying on the imperical latency, it tunes the packet size little by little.
+It needs to send a lot of packets to transfer a really big response.
+
+### 3 Ways to do it
+
+Below we will consider 3 approaches to solve this task.
+There is no such thing as the only right solution; all of them are fine as long as you understand the costs and risks well enough, and we are gonna cover them.
+
+### First, Brute Force solution.
+
+:::warning
+If you want to reproduce an example make sure to untar server/json.tar.gz; it must contain the f.json file since GitHub has a limit of up to 100mb for a file.
+:::
+
+You can imagine how the simplest Go HTTP client can implement it or just look at the code.
+
+[Link](https://github.com/dennypenta/http-response-lab/blob/543510947c0b19dbc0097adf403ae5cd6954c1cc/client/main.go)
+
+The implementation is straight forward: it sends a request, gets a response, reads, marhsals it into a defined structure, holds it in the memory and ready to serve it further.
+
+And here is the pprof output:
+
+```shell
+Showing nodes accounting for 229.48MB, 100% of 229.48MB total
+      flat  flat%   sum%        cum   cum%
+  229.48MB   100%   100%   229.48MB   100%  io.ReadAll
+         0     0%   100%   229.48MB   100%  main.main
+         0     0%   100%   229.48MB   100%  runtime.main
+```
+
+Yes, it's not real win, with huge memory consumption, but it works ok.
+
+We see all the memory consumed on reading the HTTP stream.
+
+Or you might say, "What a noob, you must use `json.Decoder`" so as to let the decoder work with the HTTP pipe closer.
+
+And it's pretty much the same, in my example, even worse.
+[Link](https://github.com/dennypenta/http-response-lab/blob/b6ee7fcfd69fdffad844eb6a3d324d2fe3040985/client/main.go) to code with Decoder
+
+```shell
+Showing nodes accounting for 384MB, 100% of 384MB total
+      flat  flat%   sum%        cum   cum%
+     384MB   100%   100%      384MB   100%  encoding/json.(*Decoder).refill
+         0     0%   100%      384MB   100%  encoding/json.(*Decoder).Decode
+         0     0%   100%      384MB   100%  encoding/json.(*Decoder).readValue
+         0     0%   100%      384MB   100%  main.main
+         0     0%   100%      384MB   100%  runtime.main
+```
+
+To recall why let's dig a little into the json/encoding library [implementation](https://cs.opensource.google/go/go/+/refs/tags/go1.22.3:src/encoding/json/stream.go;l=49). 
+
+```go
+func (dec *Decoder) Decode(v any) error {
+	if dec.err != nil {
+		return dec.err
+	}
+
+	if err := dec.tokenPrepareForDecode(); err != nil {
+		return err
+	}
+
+	if !dec.tokenValueAllowed() {
+		return &SyntaxError{msg: "not at beginning of value", Offset: dec.InputOffset()}
+	}
+
+	// Read whole value into buffer.
+	n, err := dec.readValue()
+	if err != nil {
+		return err
+	}
+	dec.d.init(dec.buf[dec.scanp : dec.scanp+n])
+	dec.scanp += n
+
+	// Don't save err from unmarshal into dec.err:
+	// the connection is still usable since we read a complete JSON
+	// object from it before the error happened.
+	err = dec.d.unmarshal(v)
+
+	// fixup token streaming state
+	dec.tokenValueEnd()
+
+	return err
+}
+```
+
+It does exactly the same, it calls `dec.readValue()` first to read all the response and then `dec.d.unmarshal` to parse it.
+
+And it's ok; the reason is very simple: **encoding/json doesn't know the nature of your data.**
+
+:::note
+Libraries like [json-iter](https://github.com/json-iterator/go) or [easyjson](https://github.com/mailru/easyjson) offer zero improvements in memory consumption.
+:::
+
+### Second, decode object by object.
+
+Go json library provides a method of the Decoder called [`Token`](https://pkg.go.dev/encoding/json#Decoder.Token)
+
+This approach, parsing manually token by token, can give us an option to manually parse the json.
+A token might be every symbol, such as as open bracket, quote, key, value, etc.
+But I found this approach quite complex. Having a deeply nested JSON object makes it very confusing to understand the relation for a given token. An solution could be to hold every key and designated level, but the decision gets worse with duplicated keys on a couple of levels.
+
+That's why I prefer another approach.
+
+There is a well-known problem on LeetCode called "[Valid Parentheses](https://leetcode.com/problems/valid-parentheses/description/)"
+
+We can simply read the beginning of a given object and the end, understanding when the last bracket of the object comes.
+
+[Link](https://github.com/dennypenta/http-response-lab/blob/b5890cbb74282416b5adacc92de95f18f7ee766f/client/main.go#L110)
+
+pprof gives the following output
+```shell
+(pprof) top 5
+Showing nodes accounting for 68.56MB, 100% of 68.56MB total
+Showing top 5 nodes out of 10
+      flat  flat%   sum%        cum   cum%
+   27.55MB 40.18% 40.18%    68.56MB   100%  main.decode
+      20MB 29.17% 69.35%       20MB 29.17%  encoding/json.(*decodeState).literalStore
+      20MB 29.17% 98.52%       20MB 29.17%  bufio.NewReaderSize (inline)
+    1.01MB  1.48%   100%     1.01MB  1.48%  bufio.(*Scanner).Text (inline)
+         0     0%   100%       20MB 29.17%  encoding/json.(*decodeState).object
+```
+
+Usually, the output varies between 65-80mb. 
+
+Such adventages is achieved due to marshalling the json **and** reading the HTTP response at the same time.
+
+Let's get back to the introduction. Such a huge response gives us a stream of HTTP chunks we read step by step until the FIN message comes.
+We can't make the HTTP server split every object in the response for us (probably we can, but it brings even more complexity).
+Instead, every given chunk window we can ask, "Does it contain a valid json object?"
+
+As soon as a valid object has come, we can marshal it and continue reading the response further **until the next valid JSON object comes**.
+
+### Third, the simplest: data compression.
+
+It was new to me to discover that the most efficient solution will nott be related to the response handling.
+
+**We simply must transfer as little data as we can.**
+
+JSON is not the only way to represent the data.
+It's easy and human-readable, but sometimes we have to trade it.
+
+There are plenty of formats we can apply:
+- Avro
+- Tthrift
+- MessagePack
+- Gob (Go only)
+- Protobuf
+
+And most likely more I don't even know.
+
+I tried replacing decoding to MessagePack and gave very litle result (zero \_(ツ)_/).
+
+The best outcome showed Protobuf.
+:::note
+We still use HTTP/1.1; we don't use gRPC transport.
+:::
+
+The output from pprof is even better with less effort to implement.
+It may vary up to 50mb sometimes.
+
+```shell
+(pprof) top5
+Showing nodes accounting for 30.79MB, 100% of 30.79MB total
+      flat  flat%   sum%        cum   cum%
+   30.79MB   100%   100%    30.79MB   100%  io.ReadAll
+         0     0%   100%    30.79MB   100%  main.decode
+         0     0%   100%    30.79MB   100%  main.main
+         0     0%   100%    30.79MB   100%  runtime.main
+```
+
+Here is the solution: [Link](https://github.com/dennypenta/http-response-lab/blob/main/client/main.go#L14)
+
+What we can say about Gob? 
+
+It offers very specific decoding and is a Go-only implementation, but it doesn't provide any benefit, here is the pprof output
+```shell
+(pprof) top5
+Showing nodes accounting for 70.81MB, 100% of 70.81MB total
+Showing top 5 nodes out of 20
+      flat  flat%   sum%        cum   cum%
+   30.53MB 43.12% 43.12%    30.53MB 43.12%  internal/saferio.ReadData
+   28.28MB 39.94% 83.05%    28.28MB 39.94%  reflect.growslice
+      12MB 16.95%   100%       12MB 16.95%  encoding/gob.decString
+         0     0%   100%    70.81MB   100%  encoding/gob.(*Decoder).Decode
+         0     0%   100%    70.81MB   100%  encoding/gob.(*Decoder).DecodeValue
+```
+
+Perhaps for someone, having schemaless implementation is valuable, so here is the solution [link](https://github.com/dennypenta/http-response-lab/blob/main/client/main.go#L40)
+
+
+### Conclusion
+
+I found 2 interesting ideas to me during the investigation.
+1. The best, or one of them, solution might be the most obvious, so obvious to one is not to everyone.
+2. It's not hard to implement and dig into fundamentals; some may win from engineering a new bicycle.
