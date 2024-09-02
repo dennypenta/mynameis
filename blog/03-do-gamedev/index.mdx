@@ -1,0 +1,111 @@
+---
+slug: do-gamedev
+title: Backend Guy Ventures into Game Development
+authors: [denis]
+tags: [software]
+---
+
+In order to be engaged one explores different areas and looks for unknown software area.
+
+Here we look at the gamedev in 2024 from experience in server side software.
+
+In software development, it's common to explore new domains to stay engaged. 
+Whether it's for a change of pace or to push personal boundaries, exploring the unknown can lead to fancy adventures in software. 
+This page will share my journey as a backend developer diving into the game development in 2024.
+
+<!--truncate-->
+
+#### Why Gamedev? 
+
+99% of programmes came here to make a game.
+Either did I.
+
+From a young age, I was captivated by two genres: strategy games and action RPGs. 
+My first PC came preloaded with classics like Red Alert 2, Heroes of Might and Magic 3, and Diablo 2. 
+The simple yet addictive gameplay—click, move, destroy, enjoy — cemented my love for these genres. 
+Over the years, I’ve played many iconic RTS games like Warcraft 3 and Starcraft 2 (and still do occasionally).
+But I realized that Starcraft 2 and similar games leaned more towards real-time execution rather than strategic depth.
+
+So I decided to make my own game with the strategy and decision making take the center stage.
+
+#### Choosing the Game Engine 
+
+There are numerous options out there—Defold, RPG Maker, GameMaker, Construct, to name a few.
+
+But I focused on the big three that are free to start with, offer extensive flexibility, and have been tested by major projects: Unreal Engine, Unity, and Godot.
+
+#### Unreal Engine: A Mixed Bag of Power and Complexity
+
+I chose to start with Unreal Engine. It has a large community, though not the largest. Everything Unity offers in its asset store, Unreal has an equivalent. The engine supports C++ for low-level programming and Blueprints (a visual scripting language) for level design, though you can use either approach.
+
+Installing the engine is a hassle. You need to first install the Epic Games Launcher and then download the 55GB engine itself, which can be a chore if your disk space is limited.
+
+After setting up a blank project, I was impressed by the vast flexibility Unreal offers. You get all the benefits of C++—dynamic dependency injection, custom components, and more.. But it adds complexity.
+1. Compiliation time. It exists. Not just exists like a couple blinks 5-10 seconds, it takes a lot of time to build a single class to start using it in the project.
+2. Code complexity. Write header files, manual memory management. Good package manager doesn't exist in 2024, now I understand why they love Rust so much. 
+3. Poor mac support. No comments, even the interface of top bar menu is different, I was struggling to find editor settings according to the documentation, and every question is like that. 
+
+I would recommend such engine for people who likes waiting, c++ and want to make a beatiful scenes with nice action. 
+I also have to note that engine is open source and owned by a technical guy and people who actually make games. I would stop there if I liked waiting and c++.
+
+#### Unity: The Industry Standard.
+
+Next up was Unity, the most popular game engine out there. 
+Unity has a vast ecosystem, with advanced features like rendering, post-processing, and easy shader creation. 
+It’s backed by a huge asset store, which should theoretically make development easier.
+C# - Im not a big fun, but it's compilable, therefore type safe, seems good.
+
+A basic abstraction is an object. An object has compenents to manage what is it, it might be a script to move it, a mesh to render a tree, a colission not to pass through the tree, sound to play as tree leafs on the wind and so on.
+Seems quite simple. 
+
+But when I approached a real problem there are plenty of weird things.
+1. Unity has three different render pipelines, which aren’t compatible with each other. The oldest one is being deprecated, meaning half the assets in the store may soon be obsolete.
+2. Asset store is a garbage. I tried several camera controllers, and only one partially met my needs. I had to patch it to double its functionality, which felt like reinventing the wheel.
+
+We all remember the Unity pricing drama. It has a closed-source codebase, and now there’s a tracker that counts installations to generate more revenue for shareholders. 
+This has led to a lot of half-baked features and outdated documentation, which can make the engine feel unstable.
+
+Unity is still a solid choice, but in 2024, it feels like the engine is in a weird transitional state. 
+The documentation isn’t as up-to-date as it should be, and the engine itself seems to be in a half-finished state. 
+I might revisit it in 2025 when Unity 6 is released.
+
+#### Godot: Unknown creature in the Sea.
+
+Finally, I turned to Godot, an engine I initially underestimated. 
+Known for its strong 2D capabilities, Godot seemed lacking in 3D support. 
+Its physics engine was also rumored to be subpar.
+
+So I start doing a 3D. 
+First I found that asset library is poor, camera controller only for Godot 3 (previous release) and it makes no sense to use Godot 3 in 2024.
+
+What I actually see in progress.
+0. Godot’s installation bundle is just 150MB. It has a negligible memory footprint and can run smoothly even on modest hardware. Coming from Unity, this was a breath of fresh air.
+1. Godot’s editor can be extended in a similar manner to Unity, allowing you to add new UI elements and dynamically instantiate new components.
+2. The asset library isn’t a store but a repository where everything is distributed for free. Since Godot is open-source, I doubt any significant part of it will go paid, unlike Unity and Unreal, where quality assets often come with a price tag.
+3. Physics engine implementation can be replaced with jolt easy-peasy and works very well.
+4. The same abstractions, the same component building, but not an object has component, rather a scene (actually a node) has nodes (the others to implement actual behavior of the node).
+5. Exporting is just a button click. I managed to build a project for windows in Mac, it's so good, haven't had such smooth exprerience.
+
+It was surprisingly easy to understand the basics, the nodes design, the event bus system, for a backend guy it's perfect to start making a real game.
+
+GDScript can fail in runtime, not the best, but you can use C# for the sake of compilte time failure.
+
+And I know, the community is smaller, it will be developed slower, true. But I care about me today, not the community.
+
+I initially planned to give Unity a fair shot, spending a week with both engines. 
+But after just two days with Godot, I was progressing so much faster that I decided it wasn’t worth the time to continue with Unity. 
+Godot’s lower entry barrier and faster development pace made it the clear choice for me.
+
+##### I want to finish simpler. 
+
+In the end, the best engine is the one that aligns with your needs and preferences. 
+Remember, Blender was once considered a niche tool while everyone used 3D Max, and now Blender is the industry standard. 
+Firebase was just a “base,” and today we have Supabase, Pocketbase and many others.
+
+The landscape of game development is always changing. 
+What matters most is finding the tool that helps you bring your vision to life, not what the industry standard is. 
+For me, that tool is Godot.
+
+### Lessons
+Spoiler, no, I didn't finish a game, I learned the gamedev abstractions and played with the engines a bit and I enjoyed it.
+And it's fine, I had good time and wish everyone to find a toy you can spend some time on and make you engaged.
