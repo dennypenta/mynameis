@@ -1,0 +1,165 @@
+---
+slug: api-design
+title: "Web API Design: A Simplified Approach"
+authors: [denis]
+tags: [software]
+---
+
+__Note__: This page won’t teach you how to design an API from scratch, but it will give you insights into how I recently designed one while developing my [PaaS](https://github.com/treenq/treenq).
+
+<!--truncate-->
+
+## Preface
+
+Feel free to skip to the next section if you want to avoid the backstory.
+
+After working with various communication protocols (e.g., web form-data, REST, JSON-RPC 2.0), I’ve realized that many of them aim to cover a wide range of use cases. This broad focus introduces a lot of complexity:
+
+- Network implementations require special handling, such as decoding domain-level errors into transport error codes and messages.
+- Encoding and decoding messages require marshalling domain models into protocol-specific formats.
+- Protocols like REST involve lengthy discussions about naming conventions and URL structures.
+- Some protocols, like JSON-RPC, demand custom solutions, such as middleware for handling requests.
+
+These factors complicate implementations and slow down team agreements.
+
+## The gRPC Shift
+
+When I started working with gRPC, it introduced some important improvements:
+
+- Models are generated automatically.
+- Service interfaces are provided and generated.
+- Clients are generated, allowing you to focus on just creating requests.
+- Error codes are simplified, reducing them from hundreds to around 15 (which is still more than needed, but we’ll get to that).
+- The error format is predefined, so you don’t have to design it—just reuse [the model](https://cloud.google.com/apis/design/errors)
+
+And I liked. I don't know who didn't.
+
+I loved it. Most people who use gRPC feel the same.
+However, gRPC doesn’t naturally align with web browsers due to its reliance on HTTP/2, often necessitating additional layers to adapt to HTTP/1.1. 
+Still, browser compatibility remains a common requirement.
+
+## Bringing gRPC Ideas to the Web
+
+This made me think: what can we adopt from gRPC for web APIs? The most obvious feature is __code generation__.
+
+Swagger attempts client generation but introduces its own challenges:
+1. Swagger has too many plugins, requires specific formats, and its "standard" is fragmented. Many web renderers are incompatible with each other. For example, Apiary’s requirements may contradict code generation.
+2. Swagger focuses on defining documentation instead of the API itself, adding complexity.
+
+The I discovered [tRPC](https://trpc.io/docs/quickstart), which offered many things I’d been hoping for—network handling as a natural consequence of defining models. 
+The catch? It’s limited to JavaScript.
+
+So, I decided to design my own API approach.
+
+## My API Design Principles
+
+Here are the guiding principles I followed:
+
+- It must be built on top of HTTP to support the web.
+- No URL queries, forms, or arguments in the path—these overcomplicate things. Most people don’t even know that URL queries are essentially [multimaps](https://en.wikipedia.org/wiki/Multimap), which leads to more bugs.
+- Every API call uses only POST. The payload is always in the body, and for simplicity, in my case, it’s JSON.
+- The procedure naming follows the same conventions we use in code. For instance, instead of REST’s `/users/{id}/wallet`, I use `/getUserWallet`.
+
+## What Does This Achieve?
+
+- I only define the models I need — no extra complexity.
+- Optionally, I can add descriptions to make the generated documentation more talkative.
+- From the defined router, I can generate both the client code and the API specification (including Swagger).
+- The code generation process is simplified: a single - word URL, consistent HTTP method, and uniform marshalling strategy make everything easy to implement and maintain.
+
+## Error Handling
+
+Error handling is a crucial part of any API design, and the model needs to be flexible enough to cover a wide range of scenarios. 
+Based on my experience, a simple yet effective error model looks like this:
+
+```go
+type Error struct {
+  Code    string
+  Message string
+  Meta    map[string]any
+}
+```
+
+- __Code__: This holds a unique value that identifies the specific issue. 
+It helps narrow down the location of the problem in the code and quickly leads developers to the exact line or area where the error occurred. Additionally, it provides clear guidance to users about the expected behavior or how to resolve the issue.
+- __Message__: The message field can serve a dual purpose:
+  1. __UserMessage__: This is a user-friendly message that can be translated into different languages on the server side. It's meant to be shown in the user interface to guide the user.
+  2. __DevMessage__: This contains a technical explanation intended for developers or logs. It explains what went wrong, why it happened, and what actions can be taken to resolve it.
+While you could use a single string for both, in complex applications with internationalization (i18n) needs, separating them into two distinct lines would help.
+- __Meta__: This is a flexible map that can contain any additional context or metadata about the error. For example, if you're validating a form with multiple fields, the Meta map can list which fields failed validation and why.
+
+### Example Error Response
+
+Here’s an example of how this error model might be used in a real-world scenario. Suppose a user submits a tax form with several invalid fields. The API can return an error response like this:
+```go
+Error{
+  Code: "TAX_FORM_INVALID",
+  Meta: map[string]any{
+    "tax_class": "expected a number between 1 and 4",
+    "house_number": "must be a number",
+  }
+}
+```
+
+In this example:
+- The __Code__ is `"TAX_FORM_INVALID"`, which indicates a validation failure specific to the tax form.
+- The __Meta__ map provides detailed feedback on specific fields (`tax_class`, `house_number`) that need attention, making it easier for the user to correct their input.
+
+
+### Error Handling in API Handlers
+
+In my API, the handler interface is designed to consistently return errors using this model. 
+This ensures that all errors adhere to a common structure, simplifying error handling on both the client and server side.
+
+For instance, a typical API handler might look like this:
+```go
+GetProfile(ctx context.Context, _ struct{}) (GetProfileResponse, *Error)
+```
+
+Here, instead of returning a plain error, the handler returns a pointer to the *Error type. 
+This approach ensures that any error returned strictly follows the predefined error format.
+
+### Example from My Application
+
+Here’s a practical example of how I’ve implemented this in my app:
+```go
+package domain
+
+import (
+    "context"
+    "github.com/treenq/treenq/pkg/vel"
+)
+
+type GetProfileResponse struct {
+    Email    string `json:"email"`
+    Username string `json:"username"`
+    Name     string `json:"name"`
+}
+
+func (h *Handler) GetProfile(ctx context.Context, _ struct{}) (GetProfileResponse, *vel.Error) {
+    profile := h.authProfiler.GetProfile(ctx)
+    return GetProfileResponse{
+        Email:    profile.Email,
+        Username: profile.Username,
+        Name:     profile.Name,
+    }, nil
+}
+```
+
+In this code:
+- The `GetProfile` function fetches the user profile and returns it as a `GetProfileResponse`.
+- The second return value is `*Error` instead of a generic `error`, making it clear that the function follows the structured error format.
+
+## Why Use a Custom Error Type?
+
+By using a custom `Error` type instead of the standard `error`, we enforce consistency across the API. 
+The error itself still implements Go’s built-in `error` interface, allowing it to work seamlessly with existing Go error-handling patterns. 
+However, the benefit is that every error now carries additional structured information, like the error code and metadata, making it easier to debug and handle errors programmatically.
+
+## Epiloge
+
+I ended up building a "framework" in Go on top of net/http that is able to generate clients for any language.
+
+You can check it out [here](https://github.com/treenq/treenq/blob/main/pkg/vel/router.go). 
+
+I don’t recommend using it as-is — it’s better to copy and adapt it for your own needs.
