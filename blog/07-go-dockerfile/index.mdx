@@ -5,7 +5,7 @@ authors: [denis]
 tags: [software, go]
 ---
 
-__Note__: The things I've collected to write my best Dockerfile. Appreciate any comments mentioning I could do it better and more optimal.
+The things I've collected to write my best Dockerfile. Appreciate any comments mentioning I could do it better and more optimal.
 
 <!--truncate-->
 
@@ -13,7 +13,7 @@ __Note__: The things I've collected to write my best Dockerfile. Appreciate any 
 
 TLDR:
 
-```dockerfile
+```docker
 FROM golang:1.23.1-alpine AS builder
 
 WORKDIR /app
@@ -56,13 +56,15 @@ Link: https://github.com/treenq/treenq/blob/98e6d8dd5f5756fe5df561913e10515784ef
 
 Now let's breakdown what's happening here and why.
 
-__Note__: I use colima and all the things described here work well. However, all the docs referenses will go to docker. I think they did a great job to push the industry standart. Also you have to turn on buildx to make these features work. It requires buildx installation and setting a feature flag `DOCKER_BUILDKIT=1`.
+:::note 
+I use colima and all the things described here work well. However, all the docs referenses will go to docker. I think they did a great job to push the industry standart. Also you have to turn on buildx to make these features work. It requires buildx installation and setting a feature flag `DOCKER_BUILDKIT=1`.
+:::
 
 ## Base image
 
 First, we need a base image in order to build the app. We want the base being less as possible, for that purpose I use alpine:
 
-```dockerfile
+```docker
 FROM golang:1.23.1-alpine AS builder
 ```
 
@@ -74,7 +76,7 @@ The next step we prepare a surface to build the image, all the necessary depende
 
 If you need specific timezones, certificates, github private repo creds, the service modules, whatever, we do it right here.
 
-```dockerfile
+```docker
 COPY go.mod go.mod
 COPY go.sum go.sum
 RUN --mount=type=cache,target=/go/pkg/mod/ go mod download -x
@@ -94,11 +96,13 @@ Unfortunately, most of the CI systems create a new image for a new job and it do
 
 And only then we copy the rest of the codebase:
 
-```dockerfile
+```docker
 COPY . .
 ```
 
-__Note__: Don't forget to check your dockerignore to skip copying useless files.
+:::note 
+Don't forget to check your dockerignore to skip copying useless files.
+:::
 
 ## Targets
 
@@ -116,7 +120,7 @@ Let's have a look how it plays out in case of e2e tests.
 We have a regular docker compose setup with a database or whatever dependencies you have to run your tests.
 Im a big fan of a debugger and a big hater of infinite print statements. Don't get me wrong, logging is an awesome tool, but not the forgotten prints in a production build.
 
-```dockerfile
+```docker
 FROM builder AS dev
 
 RUN --mount=type=cache,target=/go/pkg/mod/ --mount=type=cache,target="/root/.cache/go-build" go install github.com/go-delve/delve/cmd/dlv@v1.23.0
@@ -159,7 +163,9 @@ Ports has 2 elements, a regular app HTTP port and a DAP (Debug Adapter Protocol)
 
 Next we add `secuty_opt` since the default Seccomp profile restricts the `ptrace` system call.
 
-__Note__: Seccomp is a Linux kernel feature used to restrict the system calls that a process can make. By default, Docker applies a restrictive Seccomp profile to limit potentially dangerous system calls, improving container security. Read more [here](https://docs.docker.com/engine/security/seccomp/) and [here](https://docs.docker.com/engine/containers/run/).
+:::note 
+Seccomp is a Linux kernel feature used to restrict the system calls that a process can make. By default, Docker applies a restrictive Seccomp profile to limit potentially dangerous system calls, improving container security. Read more [here](https://docs.docker.com/engine/security/seccomp/) and [here](https://docs.docker.com/engine/containers/run/).
+:::
 
 When you specify `seccomp:unconfined`, it removes the Seccomp restrictions, allowing the container to make all system calls. This config allows running `ptrace` syscall in the container, delve uses it to set breakpoints, observe memory, etc.
 
@@ -169,7 +175,7 @@ But it's not enough. We have to not only remove a restriction, but explicitly gi
 
 The prod build is quite simple and well known:
 
-```dockerfile
+```docker
 FROM builder AS prod
 
 RUN --mount=type=cache,target=/go/pkg/mod/ --mount=type=cache,target="/root/.cache/go-build" go build -ldflags "-s -w" -o server ./cmd/server
@@ -182,7 +188,7 @@ We still use mount cache, we just put different build flags, in this case ldflag
 
 There is no lots of new things for you, I want to focus on a small important thing: a user.
 
-```dockerfile
+```docker
 RUN addgroup -g 1001 appgroup && adduser -D -G appgroup -u 1001 appuser
 
 USER 1001
