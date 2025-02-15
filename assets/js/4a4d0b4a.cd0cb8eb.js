@@ -1,1 +1,0 @@
-"use strict";(self.webpackChunkmynameis=self.webpackChunkmynameis||[]).push([[850],{1593:s=>{s.exports=JSON.parse('{"label":"go","permalink":"/mynameis/blog/tags/go","allTagsPath":"/mynameis/blog/tags","count":1,"unlisted":false}')}}]);
