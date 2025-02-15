@@ -207,6 +207,38 @@ Why would I build all the stages for releasing my go app?
 You will not, if you turned on buildkit it will behave as a smarter and build only the necessary dependencies, it means it builds the dependency graph and builds only necessary part, so your production CI will never install delve to waste your time.
 The [documentation](https://docs.docker.com/build/building/multi-stage/#differences-between-legacy-builder-and-buildkit) explains it very well.
 
+## A few caveats on debugging remote DAP.
+
+If you start a debugging process as is you will find your breakpoints Rejected. 
+It happens because your DAP communicates breakpoints state with DAP server using the client paths, and your client IDE is located on your machine, while the Go binary was built inside an image, another host machine.
+
+You can find the fix in the official [doc](https://github.com/go-delve/delve/blob/master/Documentation/cli/substitutepath.md).
+
+First, I would connect to dlv `dlv connect localhost:40000` and test path substitution, 
+for instance `config substitute-path /path/in/docker /local/path` where /path/in/docker is just your WORKDIR statement and /local/path is your local dir (input `pwd` in the project folder).
+After that you can try `list main.main` and make sure it lists you a main function without an error.
+
+Eventually I have the following config to configure remote debugger:
+```json
+{
+      "type": "go",
+      "name": "debug remote service",
+      "mode": "remote",
+      "request": "attach",
+      "port": 40000,
+      "substitutePath": [
+        {
+          "from": "${env:HOME}/projects/project-name",
+          "to": "/app"
+        },
+        {
+          "from": "${env:HOME}/go/pkg/mod/",
+          "to": "/go/pkg/mod/"
+        }
+      ]
+    }
+```
+
 ## Conclusion
 
 Sorry, have nothing to say. Appreciate if you leave things better than you found it.
