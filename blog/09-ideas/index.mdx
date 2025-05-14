@@ -1,0 +1,121 @@
+---
+slug: ideas-09
+title: "Project ideas I keep"
+authors: [denis]
+tags: [software]
+---
+
+## What is it 
+
+I would recomment it for reading only if:
+- You look for programming some technical, but out of ideas
+- You are tech indie hacker who might look for a person to discuss ideas, brainstorm or even build a team (with me if you didn't get it)
+
+
+On this page I want to document the projects ideas I keep in my head, some of them for a very long time, some since recently. 
+The document probably will be updated time to time, but the idea to me simply not to loose the track of what I have.
+
+I hope I can implement at least half of them by the end of my software career.
+
+### 0: Failed grpc gui
+
+It's actually one I partially implemented, a grpc gui that gives a full scripting capability.
+
+I realized scripting itself doesn't give much value and gave up.
+But recently I found how to capitalize it and make something cool.
+Projects like cycpres allows generating e2e tests by clicking UI elements, it tracks events, generates code so you could run the same scenario constantly
+What if we could track all the API calls on backend then generate code?
+Sounds cool, I can click staging and expect it will be reproducable.
+Also, I can copy this code to make a manual scenario without expecting same result, just test something that takes many clicking.
+
+Failed repo is there btw: https://github.com/kalisto-application/kalisto
+
+### 1: PaaS as code
+
+That's my current thing. Idea is huge and the amount of features I want to do is huge.
+The list is long.
+
+1) It creates an abstraction on top of k8s so any kid could deploy an app and keep playing with kube. 
+As a result it fits small teams and mid/large project could potentially consider it, that's why exactly kube, no VM or Nomad.
+
+2) Infra provision, eventually a user requests a database and its credentials are provided to the app envs, so one can just know it exists and don't configure it.
+Ideally an engineer even without requesting a db just call in the app `db := tq.NewDB()` and it works. 
+In a similar manner works encore.dev (but creates a huge level of abstraction and a custom runtime) or sst.dev.
+
+3) Observability exists. You don't configure metrics, logging collection, you just have it giving a simple config. 
+Yes, it's highly opinionated, but 0 effort. 
+I even have udnerstanding how to do it. Either ebpf or service mesh. 
+For instance, Istio provides gateway based metrics and can map the routes to different metrics. Theoretically I can integrate a given openapi and service mesh and the metrics are done.
+
+4) Telepresence or mirrord is integrated. It means you can run a service locally and never deal with config files and local docker compose setups. 
+You just run it against staging environment, zero config, it works.
+
+5) Optionally: preview is integrated.
+For some features a team may want to preview it, so create a temporary environment with a flexible deployment.
+The feature is easy to do for stateles systems like frontend applications, but branching a database is a huge challenge.
+Neon makes it spossible for postgres today, planetscale for mysql, but there are plenty more storages we have.
+
+6) Tilt.dev is integrated. It means you cal run locally `docker build` and this image is immediately on staging. 
+Imagine how fast if feedback loop when you test changes with the team together right in the moment.
+
+### 2: Go framework that doesn't suck
+
+Framework sounds huge. 
+But heaer me out, I don't want to build another route or faster router.
+Once I looked at huma.rocks and it looked very solid at what it does.
+
+Idea: 
+- you don't write monkey code on marshalling and unmarshalling body, just start from a business layer
+- you don't write API client to communicate to your API, it just exists (code gen hello)
+- you don't describe openAPI for the service, it exists
+
+The last point is huge to me. 
+Instead of writing openAPI and having lots of time lost on "why it doesn't fit spec" the API is ran by implementation first.
+You see in the spec what you implemented, not what you promised. 
+
+As a cost it may limit how flexible is the API, but Im fine.
+I hate REST.
+I prefer building web APIs.
+And a web API is ok if it has only GET or POST apis and has every request argument body as a request body.
+It's similar to json rpc, but simpler.
+
+I already started working on it in my PaaS project and test it in the battle, seems good so far. 
+But I will opensource it as soon as PaaS fails and will continue using this framework as long as it helps me moving faster for projects where I need Go.
+
+### 3: Infra provision for Go that doesn't suck
+
+Remember this part from PaaS `db := tq.NewDB()`.
+I think it's real.
+To make something similar to encore.dev, but not dependent on runtime.
+Sounds to me as pulumi + sync with state (let's say S3).
+Result is the same, you don't have a config, you don't have secret management, explicit provision.
+The only issue is managing the state and its secret, it might be a big security issue.
+
+### 3: Write opensource Mongodb optimized for log storage or e-comm.
+
+As of today Mongodb is not opensourced.
+There is an attempt to replace it, very successful I would save, ferretdb.
+They have good support from Microsoft and somebody else, but it's on top of postgres.
+
+Don't get me wrong, postgres is great.
+But I think there are caveats of building it on top of existing db.
+
+What if write it in Zig? 
+The performance must be huge, in a very accurate memory management it's even better than Rust.
+
+### 4: Auth for Go that doesn't suck.
+
+There are lots of auth projects around one can run as a separate service: Logto, keycloak, zitadel, supabase, there are too many of them.
+But most of the time to make it simple and fast it's great to run an embedded package instead of configuring another service.
+There are a couple librarie for go: goth and authboss.
+First is just oauth client, it's great to even look for a code and copy to the project.
+Second seems huge to implement everything, but documentation sucks.
+
+But there is one very interesting project: Ory Kratos.
+If anyone tells it's a security concern to run it in the same process - send them away.
+Even the kratos owners run it as embedded package in SaaS offering.
+Would be great to reinvent kratos as embedding first solution and make it well documented.
+
+There is a similar one for typescript - simple auth.
+The only scaring thing - both projects are between 50-100k LoC.
+
