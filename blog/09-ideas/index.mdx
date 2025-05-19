@@ -23,11 +23,6 @@ I hope I can implement at least half of them by the end of my software career.
 It's actually one I partially implemented, a grpc gui that gives a full scripting capability.
 
 I realized scripting itself doesn't give much value and gave up.
-But recently I found how to capitalize it and make something cool.
-Projects like cycpres allows generating e2e tests by clicking UI elements, it tracks events, generates code so you could run the same scenario constantly
-What if we could track all the API calls on backend then generate code?
-Sounds cool, I can click staging and expect it will be reproducable.
-Also, I can copy this code to make a manual scenario without expecting same result, just test something that takes many clicking.
 
 Failed repo is there btw: https://github.com/kalisto-application/kalisto
 
@@ -39,24 +34,15 @@ The list is long.
 1) It creates an abstraction on top of k8s so any kid could deploy an app and keep playing with kube. 
 As a result it fits small teams and mid/large project could potentially consider it, that's why exactly kube, no VM or Nomad.
 
-2) Infra provision, eventually a user requests a database and its credentials are provided to the app envs, so one can just know it exists and don't configure it.
-Ideally an engineer even without requesting a db just call in the app `db := tq.NewDB()` and it works. 
-In a similar manner works encore.dev (but creates a huge level of abstraction and a custom runtime) or sst.dev.
-
-3) Observability exists. You don't configure metrics, logging collection, you just have it giving a simple config. 
-Yes, it's highly opinionated, but 0 effort. 
-I even have udnerstanding how to do it. Either ebpf or service mesh. 
-For instance, Istio provides gateway based metrics and can map the routes to different metrics. Theoretically I can integrate a given openapi and service mesh and the metrics are done.
-
-4) Telepresence or mirrord is integrated. It means you can run a service locally and never deal with config files and local docker compose setups. 
+2) Telepresence or mirrord is integrated. It means you can run a service locally and never deal with config files and local docker compose setups. 
 You just run it against staging environment, zero config, it works.
 
-5) Optionally: preview is integrated.
+3) Optionally: preview is integrated.
 For some features a team may want to preview it, so create a temporary environment with a flexible deployment.
 The feature is easy to do for stateles systems like frontend applications, but branching a database is a huge challenge.
 Neon makes it spossible for postgres today, planetscale for mysql, but there are plenty more storages we have.
 
-6) Tilt.dev is integrated. It means you cal run locally `docker build` and this image is immediately on staging. 
+4) Tilt.dev is integrated. It means you cal run locally `docker build` and this image is immediately on staging. 
 Imagine how fast if feedback loop when you test changes with the team together right in the moment.
 
 ### 2: Go framework that doesn't suck
@@ -119,4 +105,22 @@ Would be great to reinvent kratos as embedding first solution and make it well d
 
 There is a similar one for typescript - simple auth.
 The only scaring thing - both projects are between 50-100k LoC.
+
+### 5: Observability as Code.
+
+Similar to Infra as code we define observability in code. The thing is we already have routers in the app and know all the endpoints to make them possible. It must be cool just to map them, then a config like "10% error rate on any of the ourer and pls call me", give a couple api keys aod done.
+
+### 6: Error replayer
+
+Projects like cypres allow generating e2e tests by clicking UI elements, it tracks events, generates code so you could run the same scenario constantly.
+What if we could track all the API calls on backend then generate code?
+Sounds cool, I can click staging and expect it will be reproducable.
+Also, I can copy this code to make a manual scenario without expecting same result, just test something that takes many clicking.
+
+### 7: Postgres CDC
+
+What if we could have a lightweight CDC module without a huge java like Debezium? 
+Might be cool. Not the best idea, but has some potential.
+
+
 
