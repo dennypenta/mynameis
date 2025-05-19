@@ -24,12 +24,7 @@ The document probably will be updated time to time, but the idea to me simply no
 <p>I hope I can implement at least half of them by the end of my software career.</p>
 <h3 class="anchor anchorWithStickyNavbar_LWe7" id="0-failed-grpc-gui">0: Failed grpc gui<a href="https://dennypenta.github.io/mynameis/blog/ideas-09#0-failed-grpc-gui" class="hash-link" aria-label="Direct link to 0: Failed grpc gui" title="Direct link to 0: Failed grpc gui">​</a></h3>
 <p>It's actually one I partially implemented, a grpc gui that gives a full scripting capability.</p>
-<p>I realized scripting itself doesn't give much value and gave up.
-But recently I found how to capitalize it and make something cool.
-Projects like cycpres allows generating e2e tests by clicking UI elements, it tracks events, generates code so you could run the same scenario constantly
-What if we could track all the API calls on backend then generate code?
-Sounds cool, I can click staging and expect it will be reproducable.
-Also, I can copy this code to make a manual scenario without expecting same result, just test something that takes many clicking.</p>
+<p>I realized scripting itself doesn't give much value and gave up.</p>
 <p>Failed repo is there btw: <a href="https://github.com/kalisto-application/kalisto" target="_blank" rel="noopener noreferrer">https://github.com/kalisto-application/kalisto</a></p>
 <h3 class="anchor anchorWithStickyNavbar_LWe7" id="1-paas-as-code">1: PaaS as code<a href="https://dennypenta.github.io/mynameis/blog/ideas-09#1-paas-as-code" class="hash-link" aria-label="Direct link to 1: PaaS as code" title="Direct link to 1: PaaS as code">​</a></h3>
 <p>That's my current thing. Idea is huge and the amount of features I want to do is huge.
@@ -38,17 +33,6 @@ The list is long.</p>
 <li>
 <p>It creates an abstraction on top of k8s so any kid could deploy an app and keep playing with kube.
 As a result it fits small teams and mid/large project could potentially consider it, that's why exactly kube, no VM or Nomad.</p>
-</li>
-<li>
-<p>Infra provision, eventually a user requests a database and its credentials are provided to the app envs, so one can just know it exists and don't configure it.
-Ideally an engineer even without requesting a db just call in the app <code>db := tq.NewDB()</code> and it works.
-In a similar manner works encore.dev (but creates a huge level of abstraction and a custom runtime) or sst.dev.</p>
-</li>
-<li>
-<p>Observability exists. You don't configure metrics, logging collection, you just have it giving a simple config.
-Yes, it's highly opinionated, but 0 effort.
-I even have udnerstanding how to do it. Either ebpf or service mesh.
-For instance, Istio provides gateway based metrics and can map the routes to different metrics. Theoretically I can integrate a given openapi and service mesh and the metrics are done.</p>
 </li>
 <li>
 <p>Telepresence or mirrord is integrated. It means you can run a service locally and never deal with config files and local docker compose setups.
@@ -111,7 +95,17 @@ If anyone tells it's a security concern to run it in the same process - send the
 Even the kratos owners run it as embedded package in SaaS offering.
 Would be great to reinvent kratos as embedding first solution and make it well documented.</p>
 <p>There is a similar one for typescript - simple auth.
-The only scaring thing - both projects are between 50-100k LoC.</p>]]></content>
+The only scaring thing - both projects are between 50-100k LoC.</p>
+<h3 class="anchor anchorWithStickyNavbar_LWe7" id="5-observability-as-code">5: Observability as Code.<a href="https://dennypenta.github.io/mynameis/blog/ideas-09#5-observability-as-code" class="hash-link" aria-label="Direct link to 5: Observability as Code." title="Direct link to 5: Observability as Code.">​</a></h3>
+<p>Similar to Infra as code we define observability in code. The thing is we already have routers in the app and know all the endpoints to make them possible. It must be cool just to map them, then a config like "10% error rate on any of the ourer and pls call me", give a couple api keys aod done.</p>
+<h3 class="anchor anchorWithStickyNavbar_LWe7" id="6-error-replayer">6: Error replayer<a href="https://dennypenta.github.io/mynameis/blog/ideas-09#6-error-replayer" class="hash-link" aria-label="Direct link to 6: Error replayer" title="Direct link to 6: Error replayer">​</a></h3>
+<p>Projects like cypres allow generating e2e tests by clicking UI elements, it tracks events, generates code so you could run the same scenario constantly.
+What if we could track all the API calls on backend then generate code?
+Sounds cool, I can click staging and expect it will be reproducable.
+Also, I can copy this code to make a manual scenario without expecting same result, just test something that takes many clicking.</p>
+<h3 class="anchor anchorWithStickyNavbar_LWe7" id="7-postgres-cdc">7: Postgres CDC<a href="https://dennypenta.github.io/mynameis/blog/ideas-09#7-postgres-cdc" class="hash-link" aria-label="Direct link to 7: Postgres CDC" title="Direct link to 7: Postgres CDC">​</a></h3>
+<p>What if we could have a lightweight CDC module without a huge java like Debezium?
+Might be cool. Not the best idea, but has some potential.</p>]]></content>
         <author>
             <name>Denis</name>
         </author>
