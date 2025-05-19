@@ -56,33 +56,33 @@ const config: Config = {
         {to: '/blog', label: 'Blog', position: 'left'},
       ],
     },
-    footer: {
-      style: 'dark',
-      links: [
-        {
-          title: 'Community',
-          items: [
-            {
-              label: 'Linkedin',
-              href: 'https://www.linkedin.com/in/denis-dvornikov-33399812b/',
-            },
-          ],
-        },
-        {
-          title: 'Me',
-          items: [
-            {
-              label: 'Blog',
-              to: '/blog',
-            },
-            {
-              label: 'GitHub',
-              href: 'https://github.com/dennypenta/mynameis',
-            },
-          ],
-        },
-      ],
-    },
+    // footer: {
+    //   style: 'dark',
+    //   links: [
+    //     {
+    //       title: 'Community',
+    //       items: [
+    //         {
+    //           label: 'Linkedin',
+    //           href: 'https://www.linkedin.com/in/denis-dvornikov-33399812b/',
+    //         },
+    //       ],
+    //     },
+    //     {
+    //       title: 'Me',
+    //       items: [
+    //         {
+    //           label: 'Blog',
+    //           to: '/blog',
+    //         },
+    //         {
+    //           label: 'GitHub',
+    //           href: 'https://github.com/dennypenta/mynameis',
+    //         },
+    //       ],
+    //     },
+    //   ],
+    // },
     prism: {
       theme: prismThemes.github,
       darkTheme: prismThemes.dracula,

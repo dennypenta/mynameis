@@ -6,35 +6,38 @@
 
 /* You can override the default Infima variables here. */
 :root {
-  --ifm-color-primary: #e6006b;
-  --ifm-color-primary-dark: #cf0060;
-  --ifm-color-primary-darker: #c4005b;
-  --ifm-color-primary-darkest: #a1004b;
-  --ifm-color-primary-light: #fd0076;
-  --ifm-color-primary-lighter: #ff0a7c;
-  --ifm-color-primary-lightest: #ff2c8e;
+  --ifm-color-primary: #886CBC;
+  --ifm-color-primary-dark: #6e4fa3;
+  --ifm-color-primary-darker: #5a418a;
+  --ifm-color-primary-darkest: #3e2c5e;
+  --ifm-color-primary-light: #a18ad1;
+  --ifm-color-primary-lighter: #b7a6e0;
+  --ifm-color-primary-lightest: #e0daf2;
   --ifm-code-font-size: 95%;
-  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.1);
-  --ifm-background-color: rgba(255, 255, 255, 1);
-  --ifm-background-surface-color: rgba(255, 255, 255, 1);
-  --code-block-background: rgba(246 248 250, 1);
-  --ifm-color-content: rgba(28, 30, 33, 1);
+  --docusaurus-highlighted-code-line-bg: rgba(136, 108, 188, 0.07);
+  --ifm-background-color: #091525;
+  --ifm-background-surface-color: #132C4E;
+  --ifm-background-secondary: #132C4E;
+  --code-block-background: #132C4E;
+  --ifm-color-content: #eae0d5;
 }
 
 /* For readability concerns, you should choose a lighter palette in dark mode. */
 [data-theme='dark'] {
-  --ifm-color-primary: #ff3688;
-  --ifm-color-primary-dark: #ff1776;
-  --ifm-color-primary-darker: #ff086d;
-  --ifm-color-primary-darkest: #d80058;
-  --ifm-color-primary-light: #ff559a;
-  --ifm-color-primary-lighter: #ff64a3;
-  --ifm-color-primary-lightest: #ff93bf;
-  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
-  --ifm-background-color: rgba(27, 27, 29, 1);
-  --ifm-background-surface-color: rgba(36, 37, 38, 1);
-  --code-block-background: rgba(40, 42, 54, 1);
-  --ifm-color-content: rgba(227, 227, 227, 1);
+  --ifm-color-primary: #886CBC;
+  --ifm-color-primary-dark: #6e4fa3;
+  --ifm-color-primary-darker: #5a418a;
+  --ifm-color-primary-darkest: #3e2c5e;
+  --ifm-color-primary-light: #a18ad1;
+  --ifm-color-primary-lighter: #b7a6e0;
+  --ifm-color-primary-lightest: #e0daf2;
+  --docusaurus-highlighted-code-line-bg: rgba(136, 108, 188, 0.15);
+  --ifm-background-color: #091525;
+  --ifm-background-surface-color: #132C4E;
+  --ifm-background-secondary: #132C4E;
+  --code-block-background: #132C4E;
+  --ifm-color-content: #eae0
+  d5;
 }
 
 /* Search */
