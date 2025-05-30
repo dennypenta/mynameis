@@ -1,7 +1,7 @@
 import styles from './index.module.css'
 import React from 'react'
 import Layout from '@theme/Layout'
-import { FaGithub, FaLinkedinIn, FaTwitter, FaExternalLinkAlt } from 'react-icons/fa'
+import { FaGithub, FaLinkedinIn, FaTwitter, FaExternalLinkAlt, FaFilePdf } from 'react-icons/fa'
 
 import { Bar } from 'react-chartjs-2';
 import {
@@ -14,7 +14,55 @@ import {
   Legend,
 } from 'chart.js';
 
+import Link from '@docusaurus/Link';
+
+// Declare require.context for TypeScript
+declare const require: {
+  context(directory: string, useSubdirectories: boolean, regExp: RegExp): {
+    keys(): string[];
+    <T>(id: string): T & { metadata: any; truncated?: string };
+  };
+};
+
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
+
+const previewPosts = [
+  'gopls: how your IDE becomes better every day',
+  'Go Dockerfile',
+  '250mb json in a 40mb service limit',
+]
+
+// Function to get blog posts data using require.context
+const getAllBlogPosts = () => {
+  // Use require.context to import all markdown/mdx files in the blog directory
+  const blogContext = require.context('../../blog', true, /\/index\.(md|mdx)$/);
+
+  const blogPosts = blogContext.keys().map((key) => {
+    const module = blogContext(key);
+    // Docusaurus adds metadata to the module export
+    const { metadata } = module;
+    // Assuming truncated content is available in metadata or module export
+    // If not directly available, you might need a custom loader or read file content
+    const { title, description, permalink, date, frontMatter } = metadata;
+    const truncatedContent = module.truncated as string | undefined; // Access truncated content
+
+    console.log(title)
+    return {
+      title,
+      description: description || frontMatter.description,
+      permalink,
+      date: new Date(date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
+      truncatedContent,
+    };
+  });
+
+  // Sort by date, newest first
+  blogPosts.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+  return blogPosts.filter(it => previewPosts.includes(it.title));
+};
+
+const blogPosts = getAllBlogPosts();
 
 const projects = [
   {
@@ -30,6 +78,9 @@ const projects = [
 ]
 
 const links = [
+  {
+    icon: <FaFilePdf size={24} />, text: 'CV', url: 'https://rxresu.me/candyboobers/main'
+  },
   {
     icon: <FaTwitter size={24} />, text: 'Twitter', url: 'https://twitter.com/candyboobers'
   },
@@ -149,6 +200,22 @@ const Index = (): JSX.Element => {
                   </div>
                   <span className={styles.projectArrow}><FaExternalLinkAlt size={18} /></span>
                 </a>
+              ))}
+            </div>
+          </section>
+
+          {/* New Blog Posts Section */}
+          <section className={styles.blogSection}>
+            <h2>Latest Blog Posts</h2>
+            <div className={styles.blogPostsList}>
+              {blogPosts.map((post, idx) => (
+                <Link key={idx} to={post.permalink} className={styles.blogPostPreview}>
+                  <h3>{post.title}</h3>
+                  <p className={styles.blogPostDate}>{post.date}</p>
+                  {post.truncatedContent && (
+                    <div className={styles.blogPostSummary} dangerouslySetInnerHTML={{ __html: post.truncatedContent }} />
+                  )}
+                </Link>
               ))}
             </div>
           </section>
