@@ -144,7 +144,7 @@ One important detail: first lines of your main function must be:
 ```
 
 It matters to act Buildah as root without being real rool. 
-It logs the OS thread, prepares uid/gid mapping and reexec as a new user in a new namespace. 
+It locks the OS thread, prepares uid/gid mapping and reexec as a new user in a new namespace. 
 So, softly speaking, it's not ideal to run this code inside the application code.
 
 The best design would be to have the application code isolated from pool of builders. Builders can receive the build tasks and still execute it inside a Go app in order to being able to extend he capabilities.
