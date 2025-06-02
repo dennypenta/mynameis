@@ -78,7 +78,7 @@ Sounds to me as pulumi + sync with state (let's say S3).
 Result is the same, you don't have a config, you don't have secret management, explicit provision.
 The only issue is managing the state and its secret, it might be a big security issue.
 
-### 3: Write opensource Mongodb optimized for log storage or e-comm.
+### 4: Write opensource Mongodb optimized for log storage or e-comm.
 
 As of today Mongodb is not opensourced.
 There is an attempt to replace it, very successful I would save, ferretdb.
@@ -90,7 +90,7 @@ But I think there are caveats of building it on top of existing db.
 What if write it in Zig? 
 The performance must be huge, in a very accurate memory management it's even better than Rust.
 
-### 4: Auth for Go that doesn't suck.
+### 5: Auth for Go that doesn't suck.
 
 There are lots of auth projects around one can run as a separate service: Logto, keycloak, zitadel, supabase, there are too many of them.
 But most of the time to make it simple and fast it's great to run an embedded package instead of configuring another service.
@@ -106,21 +106,25 @@ Would be great to reinvent kratos as embedding first solution and make it well d
 There is a similar one for typescript - simple auth.
 The only scaring thing - both projects are between 50-100k LoC.
 
-### 5: Observability as Code.
+### 6: Observability as Code.
 
 Similar to Infra as code we define observability in code. The thing is we already have routers in the app and know all the endpoints to make them possible. It must be cool just to map them, then a config like "10% error rate on any of the ourer and pls call me", give a couple api keys aod done.
 
-### 6: Error replayer
+### 7: Error replayer
 
 Projects like cypres allow generating e2e tests by clicking UI elements, it tracks events, generates code so you could run the same scenario constantly.
 What if we could track all the API calls on backend then generate code?
 Sounds cool, I can click staging and expect it will be reproducable.
 Also, I can copy this code to make a manual scenario without expecting same result, just test something that takes many clicking.
 
-### 7: Postgres CDC
+### 8: Postgres has tons of staff
 
-What if we could have a lightweight CDC module without a huge java like Debezium? 
-Might be cool. Not the best idea, but has some potential.
+There are tons of basic features every postgres need:
+- web UI 
+- RBAC and service accounts 
+- audit log 
+- CDC and events emitting 
+- multitenant support in order to skip building queries like "where tenant=$1"
 
 
 
