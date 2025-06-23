@@ -23,27 +23,6 @@ It has quite a lot of problems:
 
 Even to get started the user case it didn't seem convinient, it requires configuration to make it possible, so I decided to move to more secure options.
 
-### BuildKit: overlooked option
-
-What if docker could get rid of priviileged mode? 
-
-Buildx (BuildKit) is a module of docker (or moby?) that's responsible specifically for building iamges.
-
-BuildKit still has a daemon and it requires a privileged mode either.
-
-However, we can run fake root using [RootlessKit](https://github.com/rootless-containers/rootlesskit/).
-We can build our flow in the following way:
-- run a daemon 
-- run buildctl to start build 
-- when we are done we close the daemon 
-
-RootlessKit requires turning off apparmor and seccomp, because the default profile doesn't allow spawning new namespaces.
-Also, add a few linux capabilities like SETUID, SETGUID and fake root users removing the option no-new-privileges.
-
-It seems quite secure, but has a few constraints:
-- requires support explicit uid and gid which is not fine and might be annoyign 
-- requires supporting a designated pool of build machines, which is actually makes sence in terms of designing a PaaS, but makes it a way complicated to start
-
 ### Kaniko: k8s native builder 
 
 Kaniko is created to solve this problem. 
@@ -72,6 +51,8 @@ Perhaps, one day Treenq will need [Skopeo](https://github.com/containers/skopeo)
 Looking back it looks a good option and most likely I would say it's worth trying it. 
 But I thought it's very important to have a capability to run builds outside of a cluster, may be even on a isoalted VM, which is not really smart requirement I guess.
 Also, the complexity to set it up didn't look easy enough, I have to span a k8s resource, make a ServiceAccount for it and many more to start building + adding inspection API near by.
+
+On top of that, recently, Kaniko stepped down right into arhive.
 
 ### Buildah: isolated package
 
@@ -162,22 +143,72 @@ So it's better to use overlayfs, it requires /dev/fuse to run in non privileged 
 As a bonus, it might be cool to put it inside alpine, but not sure it's viable at all. 
 Putting a cgo app itself requires some [dance](https://baicai.xlog.app/docker_golang_alpine_cgo_build?locale=en) for it.
 
-### Reconsider real design
+### BuildKit: overlooked option
 
-Technically, I consider current setup "fine" to start, but not scalable well.
-A platform app and build setup must be segregated well. 
-Unfortunately, it makes it complicated to host and manage, but it might be changed in the following manner.
+What if docker could get rid of priviileged mode? 
 
-App has a buildctl, just as a client and doesn't require any meaningful capabilities privileges. 
-And there is a pool of machines to execute build job.
+Buildx (BuildKit) is a module of docker (or moby?) that's responsible specifically for building iamges.
 
-Alternatively, if buildah features is enough, a pool of build machine can be also moved to another node, but it's a simple async api that waits for a task and starts a build job.
+BuildKit still has a daemon and it requires a privileged mode either.
 
-I think it requires benchmarking for specific usecase and such benchmark might be quite time consuming.
+However, we can run fake root using [RootlessKit](https://github.com/rootless-containers/rootlesskit/).
+We can build our flow in the following way:
+- run a daemon 
+- run buildctl to start build 
+- when we are done we close the daemon 
 
+RootlessKit requires turning off apparmor and seccomp, because the default profile doesn't allow spawning new namespaces.
+Also, add a few linux capabilities like SETUID, SETGUID and fake root users removing the option no-new-privileges.
+
+It seems quite secure, but has a few constraints:
+- requires support explicit uid and gid which is not fine and might be annoyign 
+- requires supporting a designated pool of build machines, which is actually makes sence in terms of designing a PaaS, but makes it a way complicated to start
+
+
+In case of buildah it required me to run the build in the same application.
+In order to scale it well I have to build network transport and mount volumes between them, which makes it quite complicated to setup.
+
+Buildkit provides its capabilities out of the box. It makes its API a bit  harder to learn, since it's not documented well and perhaps not supposed to be used like that.
+
+Buildkit brings to main modules to the table:
+- buildkitd - a daemon to serve the builds, it may expose a unix socker to tcp connection
+- buildctl - the actual buildkit client
+
+Now it requires to to setup additional container buildkitd and write a client part inside my Go service.
+As a benefit I get rid of building images and buildkit dependencies.
+
+```yaml
+  buildkit:
+    image: moby/buildkit:v0.23.0
+    privileged: true
+    container_name: buildkit
+    ports:
+      - "1234:1234"
+    volumes:
+      - ./buildkit/entrypoint.sh:/entrypoint.sh
+      - ./buildkit/buildkitd.toml:/etc/buildkit/buildkitd.toml
+      - ./registry/certs:/certs
+      - ./buildkit/certs:/buildkit
+    entrypoint: ["/entrypoint.sh"]
+    healthcheck:
+      test: ["CMD-SHELL", "buildctl --addr tcp://localhost:1234 debug workers"]
+      interval: 5s
+      timeout: 30s
+      retries: 3
+    extra_hosts:
+      - "localhost:host-gateway"
+```
+
+entrypoint specifies the arguments to run, it overrides the default address to tcp. 
+buildkitd mostly contains registry and service access and its TLS to test and support self signed certs flow. 
+Buildkit not only builds images, but also pushes them, therefore it requires access to the registry. Since my service has acces to the local registry as to localhost I want my buildkit access it on localhost too, therefore I define extra_hosts there.
+Without the extra_hosts config registry will be available on registry host as define in the rest of the docker-compose.yaml.
+
+Full example is here: https://github.com/treenq/treenq/blob/main/src/repo/artifacts/docker.go
+
+docker-compose is in the root of the repo.
+
+Final design of the platform is the following:
 ![img](./design.svg)
 
-### Conclusion 
-
-Very sad, but we don't have free for everyone the most secure solution to build images. 
-And when it comes to multitenant platform it becomes even more complicated.
+Happy to answer your questions below in the comments
