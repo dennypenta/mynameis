@@ -27,24 +27,6 @@ It has quite a lot of problems:</p>
 <li>docker daemon is running, it's not free for resources</li>
 </ul>
 <p>Even to get started the user case it didn't seem convinient, it requires configuration to make it possible, so I decided to move to more secure options.</p>
-<h3 class="anchor anchorWithStickyNavbar_LWe7" id="buildkit-overlooked-option">BuildKit: overlooked option<a href="https://dennypenta.github.io/mynameis/blog/container-in-container-09#buildkit-overlooked-option" class="hash-link" aria-label="Direct link to BuildKit: overlooked option" title="Direct link to BuildKit: overlooked option">​</a></h3>
-<p>What if docker could get rid of priviileged mode?</p>
-<p>Buildx (BuildKit) is a module of docker (or moby?) that's responsible specifically for building iamges.</p>
-<p>BuildKit still has a daemon and it requires a privileged mode either.</p>
-<p>However, we can run fake root using <a href="https://github.com/rootless-containers/rootlesskit/" target="_blank" rel="noopener noreferrer">RootlessKit</a>.
-We can build our flow in the following way:</p>
-<ul>
-<li>run a daemon</li>
-<li>run buildctl to start build</li>
-<li>when we are done we close the daemon</li>
-</ul>
-<p>RootlessKit requires turning off apparmor and seccomp, because the default profile doesn't allow spawning new namespaces.
-Also, add a few linux capabilities like SETUID, SETGUID and fake root users removing the option no-new-privileges.</p>
-<p>It seems quite secure, but has a few constraints:</p>
-<ul>
-<li>requires support explicit uid and gid which is not fine and might be annoyign</li>
-<li>requires supporting a designated pool of build machines, which is actually makes sence in terms of designing a PaaS, but makes it a way complicated to start</li>
-</ul>
 <h3 class="anchor anchorWithStickyNavbar_LWe7" id="kaniko-k8s-native-builder">Kaniko: k8s native builder<a href="https://dennypenta.github.io/mynameis/blog/container-in-container-09#kaniko-k8s-native-builder" class="hash-link" aria-label="Direct link to Kaniko: k8s native builder" title="Direct link to Kaniko: k8s native builder">​</a></h3>
 <p>Kaniko is created to solve this problem.
 It allows setting up an environemnt for a cluster where the workload is built near it's runners, perhaps on different nodes in order to avoid any resource fight.
@@ -68,6 +50,7 @@ Perhaps, one day Treenq will need <a href="https://github.com/containers/skopeo"
 <p>Looking back it looks a good option and most likely I would say it's worth trying it.
 But I thought it's very important to have a capability to run builds outside of a cluster, may be even on a isoalted VM, which is not really smart requirement I guess.
 Also, the complexity to set it up didn't look easy enough, I have to span a k8s resource, make a ServiceAccount for it and many more to start building + adding inspection API near by.</p>
+<p>On top of that, recently, Kaniko stepped down right into arhive.</p>
 <h3 class="anchor anchorWithStickyNavbar_LWe7" id="buildah-isolated-package">Buildah: isolated package<a href="https://dennypenta.github.io/mynameis/blog/container-in-container-09#buildah-isolated-package" class="hash-link" aria-label="Direct link to Buildah: isolated package" title="Direct link to Buildah: isolated package">​</a></h3>
 <p><a href="https://github.com/containers/podman" target="_blank" rel="noopener noreferrer">Podman</a>, a Docker alternative, has a way cleaner opensource relation and how they structure the packages and repositories.
 Podman has a designated module, <a href="https://github.com/containers/buildah" target="_blank" rel="noopener noreferrer">Buildah</a>, which is used exactly for building images.
@@ -94,7 +77,7 @@ Jumping right inside the build command in the source code we find there is a sto
 <p>One important detail: first lines of your main function must be:</p>
 <div class="language-go codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#F8F8F2;--prism-background-color:#282A36"><div class="codeBlockContent_biex"><pre tabindex="0" class="prism-code language-go codeBlock_bY9V thin-scrollbar" style="color:#F8F8F2;background-color:#282A36"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#F8F8F2"><span class="token plain">	</span><span class="token keyword" style="color:rgb(189, 147, 249);font-style:italic">if</span><span class="token plain"> buildah</span><span class="token punctuation" style="color:rgb(248, 248, 242)">.</span><span class="token function" style="color:rgb(80, 250, 123)">InitReexec</span><span class="token punctuation" style="color:rgb(248, 248, 242)">(</span><span class="token punctuation" style="color:rgb(248, 248, 242)">)</span><span class="token plain"> </span><span class="token punctuation" style="color:rgb(248, 248, 242)">{</span><span class="token plain"></span><br></span><span class="token-line" style="color:#F8F8F2"><span class="token plain">		</span><span class="token keyword" style="color:rgb(189, 147, 249);font-style:italic">return</span><span class="token plain"></span><br></span><span class="token-line" style="color:#F8F8F2"><span class="token plain">	</span><span class="token punctuation" style="color:rgb(248, 248, 242)">}</span><span class="token plain"></span><br></span><span class="token-line" style="color:#F8F8F2"><span class="token plain">	unshare</span><span class="token punctuation" style="color:rgb(248, 248, 242)">.</span><span class="token function" style="color:rgb(80, 250, 123)">MaybeReexecUsingUserNamespace</span><span class="token punctuation" style="color:rgb(248, 248, 242)">(</span><span class="token boolean">false</span><span class="token punctuation" style="color:rgb(248, 248, 242)">)</span><br></span></code></pre><div class="buttonGroup__atx"><button type="button" aria-label="Copy code to clipboard" title="Copy" class="clean-btn"><span class="copyButtonIcons_eSgA" aria-hidden="true"><svg viewBox="0 0 24 24" class="copyButtonIcon_y97N"><path fill="currentColor" d="M19,21H8V7H19M19,5H8A2,2 0 0,0 6,7V21A2,2 0 0,0 8,23H19A2,2 0 0,0 21,21V7A2,2 0 0,0 19,5M16,1H4A2,2 0 0,0 2,3V17H4V3H16V1Z"></path></svg><svg viewBox="0 0 24 24" class="copyButtonSuccessIcon_LjdS"><path fill="currentColor" d="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z"></path></svg></span></button></div></div></div>
 <p>It matters to act Buildah as root without being real rool.
-It logs the OS thread, prepares uid/gid mapping and reexec as a new user in a new namespace.
+It locks the OS thread, prepares uid/gid mapping and reexec as a new user in a new namespace.
 So, softly speaking, it's not ideal to run this code inside the application code.</p>
 <p>The best design would be to have the application code isolated from pool of builders. Builders can receive the build tasks and still execute it inside a Go app in order to being able to extend he capabilities.
 This design allows me to extend options to build images: In a similar manner I can embed buildpacks to build simpler apps without a Dockerfile.</p>
@@ -109,18 +92,44 @@ The domain is huge to learn, different backends, storages drivers and so on.</li
 So it's better to use overlayfs, it requires /dev/fuse to run in non privileged container.</p>
 <p>As a bonus, it might be cool to put it inside alpine, but not sure it's viable at all.
 Putting a cgo app itself requires some <a href="https://baicai.xlog.app/docker_golang_alpine_cgo_build?locale=en" target="_blank" rel="noopener noreferrer">dance</a> for it.</p>
-<h3 class="anchor anchorWithStickyNavbar_LWe7" id="reconsider-real-design">Reconsider real design<a href="https://dennypenta.github.io/mynameis/blog/container-in-container-09#reconsider-real-design" class="hash-link" aria-label="Direct link to Reconsider real design" title="Direct link to Reconsider real design">​</a></h3>
-<p>Technically, I consider current setup "fine" to start, but not scalable well.
-A platform app and build setup must be segregated well.
-Unfortunately, it makes it complicated to host and manage, but it might be changed in the following manner.</p>
-<p>App has a buildctl, just as a client and doesn't require any meaningful capabilities privileges.
-And there is a pool of machines to execute build job.</p>
-<p>Alternatively, if buildah features is enough, a pool of build machine can be also moved to another node, but it's a simple async api that waits for a task and starts a build job.</p>
-<p>I think it requires benchmarking for specific usecase and such benchmark might be quite time consuming.</p>
-<p><img loading="lazy" alt="img" src="https://dennypenta.github.io/mynameis/assets/images/design-39997db514e3b892d65b07dc0c23f124.svg" width="890" height="695" class="img_ev3q"></p>
-<h3 class="anchor anchorWithStickyNavbar_LWe7" id="conclusion">Conclusion<a href="https://dennypenta.github.io/mynameis/blog/container-in-container-09#conclusion" class="hash-link" aria-label="Direct link to Conclusion" title="Direct link to Conclusion">​</a></h3>
-<p>Very sad, but we don't have free for everyone the most secure solution to build images.
-And when it comes to multitenant platform it becomes even more complicated.</p>]]></content:encoded>
+<h3 class="anchor anchorWithStickyNavbar_LWe7" id="buildkit-overlooked-option">BuildKit: overlooked option<a href="https://dennypenta.github.io/mynameis/blog/container-in-container-09#buildkit-overlooked-option" class="hash-link" aria-label="Direct link to BuildKit: overlooked option" title="Direct link to BuildKit: overlooked option">​</a></h3>
+<p>What if docker could get rid of priviileged mode?</p>
+<p>Buildx (BuildKit) is a module of docker (or moby?) that's responsible specifically for building iamges.</p>
+<p>BuildKit still has a daemon and it requires a privileged mode either.</p>
+<p>However, we can run fake root using <a href="https://github.com/rootless-containers/rootlesskit/" target="_blank" rel="noopener noreferrer">RootlessKit</a>.
+We can build our flow in the following way:</p>
+<ul>
+<li>run a daemon</li>
+<li>run buildctl to start build</li>
+<li>when we are done we close the daemon</li>
+</ul>
+<p>RootlessKit requires turning off apparmor and seccomp, because the default profile doesn't allow spawning new namespaces.
+Also, add a few linux capabilities like SETUID, SETGUID and fake root users removing the option no-new-privileges.</p>
+<p>It seems quite secure, but has a few constraints:</p>
+<ul>
+<li>requires support explicit uid and gid which is not fine and might be annoyign</li>
+<li>requires supporting a designated pool of build machines, which is actually makes sence in terms of designing a PaaS, but makes it a way complicated to start</li>
+</ul>
+<p>In case of buildah it required me to run the build in the same application.
+In order to scale it well I have to build network transport and mount volumes between them, which makes it quite complicated to setup.</p>
+<p>Buildkit provides its capabilities out of the box. It makes its API a bit  harder to learn, since it's not documented well and perhaps not supposed to be used like that.</p>
+<p>Buildkit brings to main modules to the table:</p>
+<ul>
+<li>buildkitd - a daemon to serve the builds, it may expose a unix socker to tcp connection</li>
+<li>buildctl - the actual buildkit client</li>
+</ul>
+<p>Now it requires to to setup additional container buildkitd and write a client part inside my Go service.
+As a benefit I get rid of building images and buildkit dependencies.</p>
+<div class="language-yaml codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#F8F8F2;--prism-background-color:#282A36"><div class="codeBlockContent_biex"><pre tabindex="0" class="prism-code language-yaml codeBlock_bY9V thin-scrollbar" style="color:#F8F8F2;background-color:#282A36"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#F8F8F2"><span class="token plain">  </span><span class="token key atrule">buildkit</span><span class="token punctuation" style="color:rgb(248, 248, 242)">:</span><span class="token plain"></span><br></span><span class="token-line" style="color:#F8F8F2"><span class="token plain">    </span><span class="token key atrule">image</span><span class="token punctuation" style="color:rgb(248, 248, 242)">:</span><span class="token plain"> moby/buildkit</span><span class="token punctuation" style="color:rgb(248, 248, 242)">:</span><span class="token plain">v0.23.0</span><br></span><span class="token-line" style="color:#F8F8F2"><span class="token plain">    </span><span class="token key atrule">privileged</span><span class="token punctuation" style="color:rgb(248, 248, 242)">:</span><span class="token plain"> </span><span class="token boolean important">true</span><span class="token plain"></span><br></span><span class="token-line" style="color:#F8F8F2"><span class="token plain">    </span><span class="token key atrule">container_name</span><span class="token punctuation" style="color:rgb(248, 248, 242)">:</span><span class="token plain"> buildkit</span><br></span><span class="token-line" style="color:#F8F8F2"><span class="token plain">    </span><span class="token key atrule">ports</span><span class="token punctuation" style="color:rgb(248, 248, 242)">:</span><span class="token plain"></span><br></span><span class="token-line" style="color:#F8F8F2"><span class="token plain">      </span><span class="token punctuation" style="color:rgb(248, 248, 242)">-</span><span class="token plain"> </span><span class="token string" style="color:rgb(255, 121, 198)">"1234:1234"</span><span class="token plain"></span><br></span><span class="token-line" style="color:#F8F8F2"><span class="token plain">    </span><span class="token key atrule">volumes</span><span class="token punctuation" style="color:rgb(248, 248, 242)">:</span><span class="token plain"></span><br></span><span class="token-line" style="color:#F8F8F2"><span class="token plain">      </span><span class="token punctuation" style="color:rgb(248, 248, 242)">-</span><span class="token plain"> ./buildkit/entrypoint.sh</span><span class="token punctuation" style="color:rgb(248, 248, 242)">:</span><span class="token plain">/entrypoint.sh</span><br></span><span class="token-line" style="color:#F8F8F2"><span class="token plain">      </span><span class="token punctuation" style="color:rgb(248, 248, 242)">-</span><span class="token plain"> ./buildkit/buildkitd.toml</span><span class="token punctuation" style="color:rgb(248, 248, 242)">:</span><span class="token plain">/etc/buildkit/buildkitd.toml</span><br></span><span class="token-line" style="color:#F8F8F2"><span class="token plain">      </span><span class="token punctuation" style="color:rgb(248, 248, 242)">-</span><span class="token plain"> ./registry/certs</span><span class="token punctuation" style="color:rgb(248, 248, 242)">:</span><span class="token plain">/certs</span><br></span><span class="token-line" style="color:#F8F8F2"><span class="token plain">      </span><span class="token punctuation" style="color:rgb(248, 248, 242)">-</span><span class="token plain"> ./buildkit/certs</span><span class="token punctuation" style="color:rgb(248, 248, 242)">:</span><span class="token plain">/buildkit</span><br></span><span class="token-line" style="color:#F8F8F2"><span class="token plain">    </span><span class="token key atrule">entrypoint</span><span class="token punctuation" style="color:rgb(248, 248, 242)">:</span><span class="token plain"> </span><span class="token punctuation" style="color:rgb(248, 248, 242)">[</span><span class="token string" style="color:rgb(255, 121, 198)">"/entrypoint.sh"</span><span class="token punctuation" style="color:rgb(248, 248, 242)">]</span><span class="token plain"></span><br></span><span class="token-line" style="color:#F8F8F2"><span class="token plain">    </span><span class="token key atrule">healthcheck</span><span class="token punctuation" style="color:rgb(248, 248, 242)">:</span><span class="token plain"></span><br></span><span class="token-line" style="color:#F8F8F2"><span class="token plain">      </span><span class="token key atrule">test</span><span class="token punctuation" style="color:rgb(248, 248, 242)">:</span><span class="token plain"> </span><span class="token punctuation" style="color:rgb(248, 248, 242)">[</span><span class="token string" style="color:rgb(255, 121, 198)">"CMD-SHELL"</span><span class="token punctuation" style="color:rgb(248, 248, 242)">,</span><span class="token plain"> </span><span class="token string" style="color:rgb(255, 121, 198)">"buildctl --addr tcp://localhost:1234 debug workers"</span><span class="token punctuation" style="color:rgb(248, 248, 242)">]</span><span class="token plain"></span><br></span><span class="token-line" style="color:#F8F8F2"><span class="token plain">      </span><span class="token key atrule">interval</span><span class="token punctuation" style="color:rgb(248, 248, 242)">:</span><span class="token plain"> 5s</span><br></span><span class="token-line" style="color:#F8F8F2"><span class="token plain">      </span><span class="token key atrule">timeout</span><span class="token punctuation" style="color:rgb(248, 248, 242)">:</span><span class="token plain"> 30s</span><br></span><span class="token-line" style="color:#F8F8F2"><span class="token plain">      </span><span class="token key atrule">retries</span><span class="token punctuation" style="color:rgb(248, 248, 242)">:</span><span class="token plain"> </span><span class="token number">3</span><span class="token plain"></span><br></span><span class="token-line" style="color:#F8F8F2"><span class="token plain">    </span><span class="token key atrule">extra_hosts</span><span class="token punctuation" style="color:rgb(248, 248, 242)">:</span><span class="token plain"></span><br></span><span class="token-line" style="color:#F8F8F2"><span class="token plain">      </span><span class="token punctuation" style="color:rgb(248, 248, 242)">-</span><span class="token plain"> </span><span class="token string" style="color:rgb(255, 121, 198)">"localhost:host-gateway"</span><br></span></code></pre><div class="buttonGroup__atx"><button type="button" aria-label="Copy code to clipboard" title="Copy" class="clean-btn"><span class="copyButtonIcons_eSgA" aria-hidden="true"><svg viewBox="0 0 24 24" class="copyButtonIcon_y97N"><path fill="currentColor" d="M19,21H8V7H19M19,5H8A2,2 0 0,0 6,7V21A2,2 0 0,0 8,23H19A2,2 0 0,0 21,21V7A2,2 0 0,0 19,5M16,1H4A2,2 0 0,0 2,3V17H4V3H16V1Z"></path></svg><svg viewBox="0 0 24 24" class="copyButtonSuccessIcon_LjdS"><path fill="currentColor" d="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z"></path></svg></span></button></div></div></div>
+<p>entrypoint specifies the arguments to run, it overrides the default address to tcp.
+buildkitd mostly contains registry and service access and its TLS to test and support self signed certs flow.
+Buildkit not only builds images, but also pushes them, therefore it requires access to the registry. Since my service has acces to the local registry as to localhost I want my buildkit access it on localhost too, therefore I define extra_hosts there.
+Without the extra_hosts config registry will be available on registry host as define in the rest of the docker-compose.yaml.</p>
+<p>Full example is here: <a href="https://github.com/treenq/treenq/blob/main/src/repo/artifacts/docker.go" target="_blank" rel="noopener noreferrer">https://github.com/treenq/treenq/blob/main/src/repo/artifacts/docker.go</a></p>
+<p>docker-compose is in the root of the repo.</p>
+<p>Final design of the platform is the following:
+<img loading="lazy" alt="img" src="https://dennypenta.github.io/mynameis/assets/images/design-2f0fa17a45b1b84f1404c7ee75031b27.svg" width="1938" height="1279" class="img_ev3q"></p>
+<p>Happy to answer your questions below in the comments</p>]]></content:encoded>
             <category>software</category>
             <category>paas</category>
         </item>
@@ -193,7 +202,7 @@ To make something similar to encore.dev, but not dependent on runtime.
 Sounds to me as pulumi + sync with state (let's say S3).
 Result is the same, you don't have a config, you don't have secret management, explicit provision.
 The only issue is managing the state and its secret, it might be a big security issue.</p>
-<h3 class="anchor anchorWithStickyNavbar_LWe7" id="3-write-opensource-mongodb-optimized-for-log-storage-or-e-comm">3: Write opensource Mongodb optimized for log storage or e-comm.<a href="https://dennypenta.github.io/mynameis/blog/ideas-09#3-write-opensource-mongodb-optimized-for-log-storage-or-e-comm" class="hash-link" aria-label="Direct link to 3: Write opensource Mongodb optimized for log storage or e-comm." title="Direct link to 3: Write opensource Mongodb optimized for log storage or e-comm.">​</a></h3>
+<h3 class="anchor anchorWithStickyNavbar_LWe7" id="4-write-opensource-mongodb-optimized-for-log-storage-or-e-comm">4: Write opensource Mongodb optimized for log storage or e-comm.<a href="https://dennypenta.github.io/mynameis/blog/ideas-09#4-write-opensource-mongodb-optimized-for-log-storage-or-e-comm" class="hash-link" aria-label="Direct link to 4: Write opensource Mongodb optimized for log storage or e-comm." title="Direct link to 4: Write opensource Mongodb optimized for log storage or e-comm.">​</a></h3>
 <p>As of today Mongodb is not opensourced.
 There is an attempt to replace it, very successful I would save, ferretdb.
 They have good support from Microsoft and somebody else, but it's on top of postgres.</p>
@@ -201,7 +210,7 @@ They have good support from Microsoft and somebody else, but it's on top of post
 But I think there are caveats of building it on top of existing db.</p>
 <p>What if write it in Zig?
 The performance must be huge, in a very accurate memory management it's even better than Rust.</p>
-<h3 class="anchor anchorWithStickyNavbar_LWe7" id="4-auth-for-go-that-doesnt-suck">4: Auth for Go that doesn't suck.<a href="https://dennypenta.github.io/mynameis/blog/ideas-09#4-auth-for-go-that-doesnt-suck" class="hash-link" aria-label="Direct link to 4: Auth for Go that doesn't suck." title="Direct link to 4: Auth for Go that doesn't suck.">​</a></h3>
+<h3 class="anchor anchorWithStickyNavbar_LWe7" id="5-auth-for-go-that-doesnt-suck">5: Auth for Go that doesn't suck.<a href="https://dennypenta.github.io/mynameis/blog/ideas-09#5-auth-for-go-that-doesnt-suck" class="hash-link" aria-label="Direct link to 5: Auth for Go that doesn't suck." title="Direct link to 5: Auth for Go that doesn't suck.">​</a></h3>
 <p>There are lots of auth projects around one can run as a separate service: Logto, keycloak, zitadel, supabase, there are too many of them.
 But most of the time to make it simple and fast it's great to run an embedded package instead of configuring another service.
 There are a couple librarie for go: goth and authboss.
@@ -213,16 +222,22 @@ Even the kratos owners run it as embedded package in SaaS offering.
 Would be great to reinvent kratos as embedding first solution and make it well documented.</p>
 <p>There is a similar one for typescript - simple auth.
 The only scaring thing - both projects are between 50-100k LoC.</p>
-<h3 class="anchor anchorWithStickyNavbar_LWe7" id="5-observability-as-code">5: Observability as Code.<a href="https://dennypenta.github.io/mynameis/blog/ideas-09#5-observability-as-code" class="hash-link" aria-label="Direct link to 5: Observability as Code." title="Direct link to 5: Observability as Code.">​</a></h3>
+<h3 class="anchor anchorWithStickyNavbar_LWe7" id="6-observability-as-code">6: Observability as Code.<a href="https://dennypenta.github.io/mynameis/blog/ideas-09#6-observability-as-code" class="hash-link" aria-label="Direct link to 6: Observability as Code." title="Direct link to 6: Observability as Code.">​</a></h3>
 <p>Similar to Infra as code we define observability in code. The thing is we already have routers in the app and know all the endpoints to make them possible. It must be cool just to map them, then a config like "10% error rate on any of the ourer and pls call me", give a couple api keys aod done.</p>
-<h3 class="anchor anchorWithStickyNavbar_LWe7" id="6-error-replayer">6: Error replayer<a href="https://dennypenta.github.io/mynameis/blog/ideas-09#6-error-replayer" class="hash-link" aria-label="Direct link to 6: Error replayer" title="Direct link to 6: Error replayer">​</a></h3>
+<h3 class="anchor anchorWithStickyNavbar_LWe7" id="7-error-replayer">7: Error replayer<a href="https://dennypenta.github.io/mynameis/blog/ideas-09#7-error-replayer" class="hash-link" aria-label="Direct link to 7: Error replayer" title="Direct link to 7: Error replayer">​</a></h3>
 <p>Projects like cypres allow generating e2e tests by clicking UI elements, it tracks events, generates code so you could run the same scenario constantly.
 What if we could track all the API calls on backend then generate code?
 Sounds cool, I can click staging and expect it will be reproducable.
 Also, I can copy this code to make a manual scenario without expecting same result, just test something that takes many clicking.</p>
-<h3 class="anchor anchorWithStickyNavbar_LWe7" id="7-postgres-cdc">7: Postgres CDC<a href="https://dennypenta.github.io/mynameis/blog/ideas-09#7-postgres-cdc" class="hash-link" aria-label="Direct link to 7: Postgres CDC" title="Direct link to 7: Postgres CDC">​</a></h3>
-<p>What if we could have a lightweight CDC module without a huge java like Debezium?
-Might be cool. Not the best idea, but has some potential.</p>]]></content:encoded>
+<h3 class="anchor anchorWithStickyNavbar_LWe7" id="8-postgres-has-tons-of-staff">8: Postgres has tons of staff<a href="https://dennypenta.github.io/mynameis/blog/ideas-09#8-postgres-has-tons-of-staff" class="hash-link" aria-label="Direct link to 8: Postgres has tons of staff" title="Direct link to 8: Postgres has tons of staff">​</a></h3>
+<p>There are tons of basic features every postgres need:</p>
+<ul>
+<li>web UI</li>
+<li>RBAC and service accounts</li>
+<li>audit log</li>
+<li>CDC and events emitting</li>
+<li>multitenant support in order to skip building queries like "where tenant=$1"</li>
+</ul>]]></content:encoded>
             <category>software</category>
         </item>
         <item>
