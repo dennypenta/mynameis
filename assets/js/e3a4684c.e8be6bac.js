@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunkmynameis=self.webpackChunkmynameis||[]).push([[691],{8893:e=>{e.exports=JSON.parse('{"permalink":"/mynameis/blog/tags/paas","page":1,"postsPerPage":10,"totalPages":1,"totalCount":3,"blogDescription":"Blog","blogTitle":"Blog"}')}}]);
