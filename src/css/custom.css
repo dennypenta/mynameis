@@ -6,38 +6,85 @@
 
 /* You can override the default Infima variables here. */
 :root {
-  --ifm-color-primary: #886CBC;
-  --ifm-color-primary-dark: #6e4fa3;
-  --ifm-color-primary-darker: #5a418a;
-  --ifm-color-primary-darkest: #3e2c5e;
-  --ifm-color-primary-light: #a18ad1;
-  --ifm-color-primary-lighter: #b7a6e0;
-  --ifm-color-primary-lightest: #e0daf2;
+  /* Updated theme for black background, white text, red accents */
+  --background: oklch(0.05 0 0); /* Near black */
+  --foreground: oklch(0.99 0 0); /* Pure white */
+  --card: oklch(0.08 0 0);
+  --card-foreground: oklch(0.99 0 0);
+  --popover: oklch(0.08 0 0);
+  --popover-foreground: oklch(0.99 0 0);
+  --primary: oklch(0.99 0 0); /* White */
+  --primary-foreground: oklch(0.05 0 0);
+  --secondary: oklch(0.15 0 0);
+  --secondary-foreground: oklch(0.99 0 0);
+  --muted: oklch(0.15 0 0);
+  --muted-foreground: oklch(0.6 0 0);
+  --accent: rgb(207, 10, 42); /* Darker red accent */
+  --accent-foreground: oklch(0.99 0 0);
+  --destructive: rgb(214, 157, 160);
+  --destructive-foreground: oklch(0.99 0 0);
+  --border: oklch(0.2 0 0);
+  --input: oklch(0.2 0 0);
+  --ring: rgb(87, 68, 71); /* Darker red ring */
+  --radius: 0rem; /* Sharp corners for minimal aesthetic */
+
+  /* Infima overrides */
+  --ifm-color-primary: rgb(207, 10, 42);
+  --ifm-color-primary-dark: rgb(186, 9, 38);
+  --ifm-color-primary-darker: rgb(176, 9, 36);
+  --ifm-color-primary-darkest: rgb(145, 7, 30);
+  --ifm-color-primary-light: rgb(228, 11, 46);
+  --ifm-color-primary-lighter: rgb(238, 12, 48);
+  --ifm-color-primary-lightest: rgb(255, 61, 87);
   --ifm-code-font-size: 95%;
-  --docusaurus-highlighted-code-line-bg: rgba(136, 108, 188, 0.07);
-  --ifm-background-color: #091525;
-  --ifm-background-surface-color: #132C4E;
-  --ifm-background-secondary: #132C4E;
-  --code-block-background: #132C4E;
-  --ifm-color-content: #eae0d5;
+  --docusaurus-highlighted-code-line-bg: rgba(207, 10, 42, 0.1);
+  --ifm-background-color: oklch(0.05 0 0);
+  --ifm-background-surface-color: oklch(0.08 0 0);
+  --ifm-background-secondary: oklch(0.08 0 0);
+  --code-block-background: oklch(0.08 0 0);
+  --ifm-color-content: oklch(0.99 0 0);
+  --ifm-font-color-base: oklch(0.99 0 0);
+  --ifm-navbar-background-color: #18181b;
 }
 
 /* For readability concerns, you should choose a lighter palette in dark mode. */
 [data-theme='dark'] {
-  --ifm-color-primary: #886CBC;
-  --ifm-color-primary-dark: #6e4fa3;
-  --ifm-color-primary-darker: #5a418a;
-  --ifm-color-primary-darkest: #3e2c5e;
-  --ifm-color-primary-light: #a18ad1;
-  --ifm-color-primary-lighter: #b7a6e0;
-  --ifm-color-primary-lightest: #e0daf2;
-  --docusaurus-highlighted-code-line-bg: rgba(136, 108, 188, 0.15);
-  --ifm-background-color: #091525;
-  --ifm-background-surface-color: #132C4E;
-  --ifm-background-secondary: #132C4E;
-  --code-block-background: #132C4E;
-  --ifm-color-content: #eae0
-  d5;
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(0.145 0 0);
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.145 0 0);
+  --popover-foreground: oklch(0.985 0 0);
+  --primary: oklch(0.985 0 0);
+  --primary-foreground: oklch(0.205 0 0);
+  --secondary: oklch(0.269 0 0);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.269 0 0);
+  --muted-foreground: oklch(0.708 0 0);
+  --accent: oklch(0.269 0 0);
+  --accent-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.396 0.141 25.723);
+  --destructive-foreground: oklch(0.637 0.237 25.331);
+  --border: oklch(0.269 0 0);
+  --input: oklch(0.269 0 0);
+  --ring: oklch(0.439 0 0);
+
+  /* Infima overrides */
+  --ifm-color-primary: rgb(207, 10, 42);
+  --ifm-color-primary-dark: rgb(186, 9, 38);
+  --ifm-color-primary-darker: rgb(176, 9, 36);
+  --ifm-color-primary-darkest: rgb(145, 7, 30);
+  --ifm-color-primary-light: rgb(228, 11, 46);
+  --ifm-color-primary-lighter: rgb(238, 12, 48);
+  --ifm-color-primary-lightest: rgb(255, 61, 87);
+  --docusaurus-highlighted-code-line-bg: rgba(207, 10, 42, 0.15);
+  --ifm-background-color: oklch(0.145 0 0);
+  --ifm-background-surface-color: oklch(0.269 0 0);
+  --ifm-background-secondary: oklch(0.269 0 0);
+  --code-block-background: oklch(0.269 0 0);
+  --ifm-color-content: oklch(0.985 0 0);
+  --ifm-font-color-base: oklch(0.985 0 0);
+  --ifm-navbar-background-color: #18181b;
 }
 
 /* Search */
