@@ -116,7 +116,7 @@ const experience = [
       "Travel tech",
   },
   {
-    period: "2019 — 2022",
+    period: "2015 — 2019",
     role: "Software Engineer",
     company: "Lamoda",
     description:
