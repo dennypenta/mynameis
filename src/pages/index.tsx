@@ -136,6 +136,7 @@ const skills = [
     "React / Solid",
 ];
 
+
 const Index = (): JSX.Element => {
     return (
         <Layout title="About me" description="About me">
