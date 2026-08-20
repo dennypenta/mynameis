@@ -1,0 +1,153 @@
+---
+slug: year-databases-11
+title: "A year of databases: how I fell in love with programming again."
+authors: [denis]
+tags: [software, database]
+---
+NOTE: LLM is not involved, typos and others mistakes are original.
+
+### Once upon a time
+
+At the very early stage of my career I joined enterprise and knew - something is moving me, it's not me swimming there.
+Buttons, CRUDs, a lot of "let's jump into a call".
+It's not mine, I enjoy speaking with a machine.
+I felt like I didn't have time step into it.
+I didn't fully understand how the industry looks like, lack of experience and self-confidence, etc.
+
+When my life settled I got free time and bother.
+That's how I started programming after hours. 
+A lot.
+Perhaps more than during the working days.
+
+It started summer 2022.
+Looking back my first projects weren't brilliant: GUI for GRPC, "AI native" task tracker, PaaS/kube UI/CD tooling.
+Not proud, but not ashamed either.
+They gave me a big shot - open many interesting contacts, understanding the market, time to "shopping" on github and learn what exists in software.
+The most important - I'm not interested in the area.
+And that's the key - learn yourself.
+
+By chance many things crossed:
+- the last job put me a lot into observability stack of my domain
+- I needed something to program
+- nobody told me anything good about grafana or elastic when it comes to logging, it gave more confidence the industry in the need (later I learned there are opensource, but they are either not well known or with a twist to setup)
+- talking to a respected engineer college pushed me "everyone wants datadog, but cheeper" 
+
+Last point was the sparkling.
+Highly respected engineer in the company, with experience to deal with the vendors convinced me it has potential.
+He sharped it with a quote of one of the MySQL directors I haven't heard before:
+“The relational database market is a $9 billion a year market. **I want to shrink it** to $3 billion and take a third of the market.” 
+
+The guy wanted to shrink the market, means making it more affordable.
+From the technical point of view it's equal to "making the software more efficient and execute more CPU instructions per second".
+That said the high performance software is the value proposition.
+It pushed me to dig.
+
+### 2 weeks
+
+First I researched the market.
+Apparently there are plenty of solutions.
+Some I knew, the others didn't.
+Thirds are in the area, but are not applied to observability, general timeseries/OLAP.
+I found a lot more sub-domains - IoT, historic data, audit log, logs aggregation from multiple sources, etc.
+
+Some were super efficient, but complex to deploy and tune like Clickhouse.
+Some are good, but closed and expensive.
+Some are great, but not popular today.
+And ofc there is a generic solutions, when people imagined it like it fits and it works on small/mid scale.
+
+I got a proof, there is potential to make a thing.
+
+### 2 months: what is a database
+
+A database system to be precise.
+
+There are amazing books like [Crafting interpreters](https://craftinginterpreters.com/) - Robert Nystrom.
+I couldn't find such resource about databases.
+There is a one Database internals book, but it's more about relational,
+and yet another very old academic book that starts from storing data persistently on a magnetic tape.
+
+Sever and decent material I found out is [lectures](https://youtu.be/7NPIENPr-zk?si=cskfywbhOBTeJ6Tk) CMU by Andy Pavlo - real databases beast.
+Says "first is family, then databases".
+The course doesn't teach how to make one from scratch, but rather a set of academic techniques and researches how specific components are implemented and
+why [mmap is forbidden](https://vldb.org/cidrdb/2022/are-you-sure-you-want-to-use-mmap-in-your-database-management-system.html).
+Also one can learn that all the well done databases made their creators filthy rich.
+
+What I got left with is reading a lot of code, the languages I don't understand.
+I would be nice to learn not only good solutions, but the bad ones to understand what mistakes are rookie.
+A couple became my OLAP bibles - clickhouse and duckdb.
+The second is less obvious, but more niche and doesn't have such huge amount of features, it's easier to follow the data flow in there.
+
+### 4 months: first visible thing
+
+First result was fake. It had 20% of the bare minimum.
+It was a data flow from the transport input of the client's up to the core data structure that eventually resides on a disk.
+But the data was never on a disk, only in memory.
+Long way to learn and a month of programming did the first steps.
+
+All in all, a lot of time and no result felt pathetic and gave me lots to think about:
+- I don't know anything about databases
+- I don't know anything about system programming
+- I don't know anything about performance
+- I still have a huge interest
+- I feel lonely, very few engineers work in databases or like it (I know zero), hard to find the network and ask an advise.
+
+But I'm full of energy so I continued.
+
+### 6 months: first cooperations
+
+On such projects I meed people time to time who pay attention to the project.
+Generally they disappear in a couple of weeks.
+From my experience I would recommend  ignore them if it's a random meet.
+Most of the time people don't know what they want or look for a big luck.
+
+First half a year knew how I could do such software.
+I saw a picture of components, how they communicate to each other and I had large document with plans and missing tech details in order to push performance and quality higher.
+For instance, I wanted my numa coroutines (hello clickhouse/silk), profiler as pprof backend and decent fuzz, Deterministic Simulation Testing, continous benchmarking and so on.
+
+It open a huge list of literature, and a huge list of paper to a longer horizon.
+
+By the way want to recommend everyone [computerenhance](https://www.computerenhance.com/), it's a base to make a good software.
+
+Until then I read some books, but usually they felt useless, like Clean code and rarely they were good as [High Performance Browser Networking](https://hpbn.co/) or mentioned above [Crafting interpreters](https://craftinginterpreters.com/).
+The last one helped me to write a query language.
+
+My literature list:
+
+- Database internals - Alex Petrov - basics. Not very important for OLAP, if one has time.
+- Linux System Programming - Robert Love - necessary to go through theoretical part, open many basic API, especially about read(). Leanred fadvise, pre pulling, direct io, etc.
+- What Every Programmer Should Know About Memory - Ulrich Drepper - super deep theory why we have that kind of memory and what we can do as a programmer.
+- С++ Concurrency in action - Anthony Williams - basic concurrency primitives, I struggled with (and still do) with memory ordering, but it helped me to implement Atomic Reference Counter, although I don't write C++
+- Is Parallel Programming Hard, And, If So, What Can You Do About It? - Paul E. McKenney - deeper about concurrent programming, real algorithms used in Linux kernel and why is that, it taught me what's wrong with Reference Counter and what is (Read Copy Update) and what alternatives to mutex we have.
+
+And my reading list with no opinion:
+- The art of multiprocessing programming - Maurice Herlihy & Nir Shavit
+- The garbage collection handbook - Richard Jones, Antony Hosking, Eliot Moss
+- Memory systems - Bruce Jacob, Spencer W. Ng, David T. Wang
+- Operating systems, 3 easy pieces - Remzi H. Arpaci-Dusseau, Andrea C. Arpaci-Dusseau
+- Performance Analysis and tuning on modern CPUs - Denis Bakhvalov
+- System performance - Brendan Gregg 
+- Latency - Pekka Enberg
+- Structure and Interpretation of Computer Programs - Harold Abelson and Gerald Jay Sussman with Julie Sussman
+- Distributed systems - MAARTEN VAN STEEN, ANDREW S. TANENBAUM
+
+### 11 months (today)
+
+What I have:
+- a plan
+- a primitive solution that works
+- the tests confirming it
+- self confidence to continue work hard and learn
+- a willingess to find a job in a database
+- trying to make something out of a database
+
+By the way I found nice people - Handmade network - community where fellas do independent software with high quality and there is no forgiveness slow or buggy software - it's just bad.
+Such community encourages moving further.
+
+To everyone who wants to program - good luck and patience.
+Consistency is the key.
+
+The project I'm talking about - [https://ochi.dev/](https://ochi.dev/) или [github.com/ochi-team/ochi](https://github.com/ochi-team/ochi).
+
+I'm open to talk anytime.
+
+
