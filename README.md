@@ -13,3 +13,8 @@ link: https://dennypenta.github.io/mynameis/
 - replace the blog folder on yours
 
 ##### Inspired by https://takken.io/
+
+### to deploy
+
+I always forget it:
+- GIT_USER=dennypenta npm run deploy
