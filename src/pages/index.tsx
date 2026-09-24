@@ -64,25 +64,11 @@ const blogPosts = getAllBlogPosts();
 
 const projects = [
     {
-        title: "Seqor",
+        title: "Ochi",
         description:
-            "Logging database",
-        tags: ["Zig"],
-        link: "https://github.com/seqor/seqor",
-    },
-    {
-        title: "Treenq",
-        description:
-            "Kubernetes IDP (Internal Dev Platform)",
-        tags: ["Go", "Kubernetes", "Pulumi"],
-        link: "https://treenq.com/",
-    },
-    {
-        title: "Kalisto",
-        description:
-            "GRPC GUI",
-        tags: ["Go", "Wails", "goja", "badger", "Protocompile", "Protoreflect"],
-        link: "#",
+            "Time-series logging-focused database",
+        tags: ["Zig", "Database systems", "OLAP"],
+        link: "https://github.com/ochi-team/ochi",
     },
 ];
 
@@ -91,36 +77,31 @@ const experience = [
         period: "2025 — Present",
         role: "Creator",
         company: "ochi",
-        description:
-            "Founding engineer in observability innovation",
+        description: "Founding engineer in observability innovation",
     },
     {
         period: "2023 — Present",
         role: "Senior Software Engineer",
         company: "Delivery Hero",
-        description:
-            "Do ad-tech bidding",
+        description: "Do ad-tech",
     },
     {
         period: "2022 — 2023",
         role: "Senior Software Engineer",
         company: "Optiopay",
-        description:
-            "Fintech",
+        description: "Fintech",
     },
     {
         period: "2019 — 2022",
         role: "Senior Software Engineer",
         company: "Tutu.ru",
-        description:
-            "Travel tech",
+        description: "Travel tech",
     },
     {
         period: "2015 — 2019",
         role: "Software Engineer",
         company: "Lamoda",
-        description:
-            "E-comm, catalog team, search indexing",
+        description: "E-comm, catalog team, search indexing",
     }
 ];
 
@@ -166,7 +147,10 @@ const Index = (): JSX.Element => {
                                 Opensource contributor (go/tools, nvim plugins, zitadel)
                             </p>
                             <p>
-                                Pushing observability forward making it energy efficient. Do my best to the greener world.
+                                Pushing observability forward.
+                            </p>
+                            <p>
+                                buzzwords: go, zig, c++, python, javascript, typescript, react, solid, aws, gcp, terraform, pulumi, k8s, kubernetes, postgres, rabbit, kafka, redis, grafana, datadog
                             </p>
                         </div>
                     </section>
